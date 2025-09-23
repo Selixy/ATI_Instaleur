@@ -1,0 +1,25 @@
+# Ignorer les fichiers Python compilés (cache)
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Ignorer les dépendances et environnements virtuels
+.venv/
+venv/
+env/
+
+# Ignorer les fichiers de logs, de cache ou les ressources temporaires
+*.log
+*.cache
+*.tmp
+*.env
+
+/data/
+/temp/
+/tmp/
+
+# Ignorer les fichiers d'uv
+uv.lock
+
+# Ignorer les builds
+build/

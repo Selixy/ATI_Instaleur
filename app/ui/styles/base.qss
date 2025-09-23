@@ -1,0 +1,330 @@
+/* ===========================
+   FENÊTRE PRINCIPALE
+   =========================== */
+
+/* Fenêtre principale */
+QMainWindow {
+    border-radius: 8px;
+    background-color: {{COLOR_TITLEBAR_BG}};
+}
+
+QWidget#Workspace {
+    background-color: {{COLOR_TEXT_HOVER}};
+}
+
+QWidget#Workspace QStackedWidget {
+    background-color: {{COLOR_BG}};
+}
+
+
+
+/* ===========================
+   BARRE DE TITRE PERSONNALISÉE
+   =========================== */
+
+/* Titre de la fenêtre */
+#CustomTitleBar QLabel#titleLabel {
+    color: {{COLOR_TEXT}};
+    font-size: 12px;
+}
+
+/* Premier bouton - Effet glow géré par Python */
+#CustomTitleBar QPushButton[isFirstButton="true"] {
+    background-color: transparent;
+    color: {{COLOR_TEXT}};
+    border: none;
+    font-size: 16px;
+    margin-left: 0px;
+    icon-size: 24px;
+    border-radius: 4px;
+}
+
+#CustomTitleBar QPushButton[isFirstButton="true"]:hover {
+    background-color: transparent;
+    color: {{COLOR_TEXT_HOVER}};
+    border: none;
+    border-radius: 4px;
+}
+
+#CustomTitleBar QPushButton[isFirstButton="true"]:pressed {
+    background-color: rgba(0, 0, 0, 0.1);
+    color: {{COLOR_TEXT_HOVER}};
+    border: none;
+    border-radius: 4px;
+}
+
+/* Espaceur après le premier bouton */
+#CustomTitleBar QWidget#firstButtonSpacer {
+    min-width: 2px;
+    max-width: 2px;
+    width: 2px;
+    margin: 0px;
+    border: none;
+    background-color: transparent;
+}
+
+/* Boutons de la barre de titre (autres que le premier) */
+#CustomTitleBar QPushButton {
+    background-color: transparent;
+    color: {{COLOR_TEXT}};
+    border: none;
+    font-size: 13px;
+    border-radius: 4px;
+}
+
+/* Boutons au survol */
+#CustomTitleBar QPushButton:hover {
+    background-color: {{COLOR_BTN_HOVER}};
+    color: {{COLOR_TEXT_HOVER}};
+    border-radius: 4px;
+}
+
+/* Boutons enfoncés */
+#CustomTitleBar QPushButton:pressed {
+    background-color: {{COLOR_BTN_PRESSED}};
+    color: {{COLOR_TEXT_HOVER}};
+    border-radius: 4px;
+}
+
+/* Tous les boutons système de la titlebar par défaut */
+TitleBarButton {
+    qproperty-normalBackgroundColor: {{COLOR_WIN_BTN_NORMAL}};
+    qproperty-normalColor: {{COLOR_WIN_BTN_NORMAL_TEXT}};
+    qproperty-hoverBackgroundColor: {{COLOR_WIN_BTN_HOVER}};
+    qproperty-hoverColor: {{COLOR_WIN_BTN_HOVER_TEXT}};
+    qproperty-pressedBackgroundColor: {{COLOR_WIN_BTN_PRESSED}};
+    qproperty-pressedColor: {{COLOR_WIN_BTN_PRESSED_TEXT}};
+}
+
+/* Spécifique au bouton Fermer */
+TitleBarButton#CloseButton {
+    qproperty-hoverBackgroundColor: {{COLOR_WIN_BTN_CLOSE_HOVER}};
+    qproperty-hoverColor: {{COLOR_WIN_BTN_CLOSE_TEXT}};
+}
+
+/* ===========================
+   SCROLLBARS ET SCROLL AREAS
+   =========================== */
+
+QWidget#ScrollContent {
+    background-color: {{COLOR_BG}};
+}
+
+QScrollArea {
+    border: none;
+    background-color: transparent;
+}
+
+QScrollBar:vertical {
+    background: #333;
+    width: 2px;
+    border-radius: 6px;
+}
+
+QScrollBar::handle:vertical {
+    background: #0164b0;
+    border-radius: 13px;
+    min-height: 10px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: #0078d4;
+}
+
+/* ===========================
+   PAGE DE SÉLECTION
+   =========================== */
+
+QPushButton {
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-weight: bold;
+}
+
+QPushButton#SelectAllButton {
+    background-color: #0078d4;
+    color: {{COLOR_TEXT_HOVER}};
+}
+
+QPushButton#SelectAllButton:hover {
+    background-color: {{COLOR_BTN_PRESSED}};
+}
+
+QPushButton#DeselectAllButton {
+    background-color: {{COLOR_BTN_HOVER}};
+    color: {{COLOR_TEXT_HOVER}};
+}
+
+QPushButton#DeselectAllButton:hover {
+    background-color: {{COLOR_TITLEBAR_BORDER}};
+}
+
+QPushButton#InstallButton {
+    background-color: #28a745;
+    color: {{COLOR_TEXT_HOVER}};
+}
+
+QPushButton#InstallButton:hover {
+    background-color: #218838;
+}
+
+QPushButton#InstallButton:disabled {
+    background-color: {{COLOR_TITLEBAR_BORDER}};
+    color: {{COLOR_TEXT}};
+}
+
+QLabel[class="DescriptionLabel"] {
+    font-size: 20px;
+    font-family: 'Segoe UI';
+    color: {{COLOR_TEXT}};
+    font-weight: bold;
+}
+
+/* ===========================
+   CARTES D'APPLICATION
+   =========================== */
+
+/* Carte d'application principale */
+ApplicationCard {
+    border: 1px solid {{COLOR_TITLEBAR_BORDER}};
+    border-radius: 8px;
+    background-color: {{COLOR_BG}};
+    margin: 5px;
+}
+
+ApplicationCard:hover {
+    border-color: #0078d4;
+    background-color: {{COLOR_BTN_HOVER}};
+}
+
+/* Labels dans ApplicationCard */
+ApplicationCard QLabel[class="AppNameLabel"] {
+    font-weight: bold;
+    font-size: 14px;
+    color: {{COLOR_TEXT_HOVER}};
+}
+
+ApplicationCard QLabel[class="AppDescLabel"] {
+    color: {{COLOR_TEXT}};
+    font-size: 12px;
+}
+
+ApplicationCard QLabel[class="AppCategoryLabel"] {
+    color: #0078d4;
+    font-size: 11px;
+}
+
+ApplicationCard QLabel[class="AppMethodsLabel"] {
+    color: {{COLOR_TEXT}};
+    font-size: 11px;
+}
+
+/* Checkbox dans ApplicationCard */
+ApplicationCard QCheckBox {
+    spacing: 5px;
+}
+
+ApplicationCard QCheckBox::indicator {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    border: 1px solid {{COLOR_TITLEBAR_BORDER}};
+    background-color: {{COLOR_BG}};
+}
+
+ApplicationCard QCheckBox::indicator:hover {
+    border-color: #0078d4;
+    background-color: {{COLOR_BTN_HOVER}};
+}
+
+ApplicationCard QCheckBox::indicator:checked {
+    background-color: #0078d4;
+    border-color: #0078d4;
+    image: url(:/icons/check.png);
+}
+
+ApplicationCard QCheckBox::indicator:checked:hover {
+    background-color: {{COLOR_BTN_PRESSED}};
+}
+
+/* ===========================
+   PAGE D'INSTALLATION
+   =========================== */
+
+InstallationPage {
+    background-color: {{COLOR_BG}};
+    color: {{COLOR_TEXT_HOVER}};
+}
+
+QLabel {
+    color: {{COLOR_TEXT}};
+}
+
+QFrame#Card {
+    background-color: transparent;
+    border: 1px solid {{COLOR_TITLEBAR_BORDER}};
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 10px;
+}
+
+QProgressBar {
+    border: none;
+    border-radius: 2px;
+    background-color: {{COLOR_TITLEBAR_BG}};
+}
+
+QProgressBar::chunk {
+    background-color: #0078d4;
+    border-radius: 2px;
+}
+
+QPushButton {
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-weight: 500;
+}
+
+QTextEdit {
+    background-color: {{COLOR_TITLEBAR_BG}};
+    border: 1px solid {{COLOR_TITLEBAR_BORDER}};
+    border-radius: 4px;
+    padding: 8px;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 13px;
+    color: {{COLOR_TEXT}};
+}
+
+.TitleLabel {
+    color: {{COLOR_TEXT}};
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.SubtitleLabel {
+    color: {{COLOR_TEXT}};
+    font-size: 14px;
+}
+
+.AppLabel {
+    color: {{COLOR_TEXT}};
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.StepLabel {
+    color: {{COLOR_TEXT}};
+    font-size: 13px;
+}
+
+.ProgressLabel {
+    color: {{COLOR_TEXT}};
+    font-size: 13px;
+}
+
+.PercentLabel {
+    color: {{COLOR_TEXT}};
+    font-size: 13px;
+}

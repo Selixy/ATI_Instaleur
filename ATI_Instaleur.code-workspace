@@ -1,0 +1,29 @@
+{
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    "files.exclude": {
+      "**/__pycache__": true,
+      "**/*.pyc": true,
+      "**/*.pyo": true,
+      "**/*.pyd": true,
+      "**/uv.lock": true,
+      "**/.venv": true,
+      "**/venv": true,
+      "**/.mypy_cache": true,
+      "**/.pytest_cache": true
+    },
+    "search.exclude": {
+      "**/__pycache__": true,
+      "**/*.pyc": true,
+      "**/uv.lock": true,
+      "**/.venv": true,
+      "**/venv": true,
+      "**/.mypy_cache": true,
+      "**/.pytest_cache": true
+    }
+  }
+}

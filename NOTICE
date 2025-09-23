@@ -1,0 +1,41 @@
+TokenCreator
+Copyright (c) 2025 Selixy <selixy.dev@gmail.com>
+Licensed under the MIT License (see LICENSE).
+
+────────────────────────────────────────────
+Third-party components and licenses
+────────────────────────────────────────────
+
+This software bundles third-party libraries. Each library remains
+the property of its respective copyright holder and is distributed
+under its original license terms.
+
+• NumPy
+  License: BSD 3-Clause License
+  Copyright: 2005-2025, NumPy Developers
+  Source: https://github.com/numpy/numpy
+  License text: https://opensource.org/licenses/BSD-3-Clause
+
+• PySide6
+  License: GNU LGPL v3.0
+  Copyright: The Qt Company Ltd.
+  Source: https://code.qt.io/cgit/pyside/pyside-setup.git/
+  License text: https://www.gnu.org/licenses/lgpl-3.0.html
+
+• PySide6-Addons
+  License: GNU LGPL v3.0
+  Copyright: The Qt Company Ltd.
+  Source: https://code.qt.io/cgit/pyside/pyside-setup.git/
+  License text: https://www.gnu.org/licenses/lgpl-3.0.html
+
+• qframelesswindow
+  License: GNU LGPL v3.0
+  Copyright: yjg30737
+  Source: https://github.com/zhiyiYo/qframelesswindow
+  License text: https://www.gnu.org/licenses/lgpl-3.0.html
+
+• OpenCV (opencv-python-headless)
+  License: Apache License 2.0
+  Copyright: 2000-2025, Intel Corporation, Willow Garage, Itseez, OpenCV Foundation and contributors
+  Source: https://github.com/opencv/opencv-python
+  License text: https://www.apache.org/licenses/LICENSE-2.0

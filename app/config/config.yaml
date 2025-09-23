@@ -1,0 +1,270 @@
+applications:
+  - name: "Blender"
+    description: "Suite de création 3D libre et gratuite"
+    category: "3D/Animation"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "winget"
+        package: "BlenderFoundation.Blender"
+        priority: 1
+      - type: "chocolatey"
+        package: "blender"
+        priority: 2
+      - type: "direct_download"
+        url: "https://www.blender.org/download/"
+        priority: 3
+
+  - name: "Visual Studio Code"
+    description: "Éditeur de code source léger et puissant"
+    category: "Développement"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "winget"
+        package: "Microsoft.VisualStudioCode"
+        priority: 1
+      - type: "chocolatey"
+        package: "vscode"
+        priority: 2
+      - type: "direct_download"
+        url: "https://code.visualstudio.com/download"
+        priority: 3
+
+  - name: "SyncTrazor"
+    description: "Outil de synchronisation et de sauvegarde de fichiers"
+    category: "Utilitaires"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "direct_download"
+        url: "https://www.synctrazor.com/download"
+        priority: 1
+
+  - name: "PowerToys"
+    description: "Utilitaires système pour améliorer la productivité sous Windows"
+    category: "Utilitaires"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "winget"
+        package: "Microsoft.PowerToys"
+        priority: 1
+      - type: "chocolatey"
+        package: "powertoys"
+        priority: 2
+
+  - name: "PureRef"
+    description: "Outil de référence visuelle pour les artistes"
+    category: "Graphisme"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "direct_download"
+        url: "https://www.pureref.com/download"
+        priority: 1
+
+  - name: "DJV"
+    description: "Visionneuse d'images et de vidéos pour les professionnels de la 3D"
+    category: "Utilitaires"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "direct_download"
+        url: "https://djv.sourceforge.net/download"
+        priority: 1
+
+  - name: "Discord"
+    description: "Plateforme de communication vocale et textuelle"
+    category: "Communication"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "winget"
+        package: "Discord.Discord"
+        priority: 1
+      - type: "chocolatey"
+        package: "discord"
+        priority: 2
+
+  - name: "Git"
+    description: "Système de contrôle de version décentralisé"
+    category: "Développement"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "winget"
+        package: "Git.Git"
+        priority: 1
+      - type: "chocolatey"
+        package: "git"
+        priority: 2
+
+  - name: "TortoiseGit"
+    description: "Client Git pour Windows avec interface graphique"
+    category: "Développement"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "chocolatey"
+        package: "tortoisegit"
+        priority: 1
+      - type: "direct_download"
+        url: "https://tortoisegit.org/download/"
+        priority: 2
+
+  - name: "Visual Studio"
+    description: "Environnement de développement intégré (IDE) pour Windows"
+    category: "Développement"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "winget"
+        package: "Microsoft.VisualStudio.2022.Community"
+        priority: 1
+      - type: "chocolatey"
+        package: "visualstudio2022community"
+        priority: 2
+
+  - name: "Autodesk Maya"
+    description: "Logiciel de modélisation et d'animation 3D (version 2024)"
+    category: "3D/Animation"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "direct_download"
+        url: "https://www.autodesk.com/products/maya/free-trial"
+        priority: 1
+
+  - name: "Autodesk MotionBuilder"
+    description: "Logiciel d'animation 3D en temps réel (version 2022)"
+    category: "3D/Animation"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "direct_download"
+        url: "https://www.autodesk.com/products/motionbuilder/free-trial"
+        priority: 1
+
+  - name: "Houdini"
+    description: "Logiciel de création procédurale 3D (version 20.5)"
+    category: "3D/Animation"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "direct_download"
+        url: "https://www.sidefx.com/download/"
+        priority: 1
+
+  - name: "Unreal Engine 5"
+    description: "Moteur de jeu et de création 3D (version 5.3.4)"
+    category: "3D/Animation"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "direct_download"
+        url: "https://www.unrealengine.com/en-US/download"
+        priority: 1
+
+  - name: "Unity"
+    description: "Moteur de jeu et de création 3D"
+    category: "3D/Animation"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "direct_download"
+        url: "https://unity.com/download"
+        priority: 1
+
+  - name: "The Foundry NukeX"
+    description: "Logiciel de composition et d'effets visuels"
+    category: "3D/Animation"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "direct_download"
+        url: "https://www.foundry.com/products/nuke"
+        priority: 1
+
+  - name: "The Foundry NukeStudio"
+    description: "Logiciel de composition et de montage pour les effets visuels"
+    category: "3D/Animation"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "direct_download"
+        url: "https://www.foundry.com/products/nuke-studio"
+        priority: 1
+
+  - name: "The Foundry Mari"
+    description: "Logiciel de texturing 3D"
+    category: "3D/Animation"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "direct_download"
+        url: "https://www.foundry.com/products/mari"
+        priority: 1
+
+  - name: "Adobe Photoshop"
+    description: "Logiciel de retouche et de création graphique"
+    category: "Graphisme"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "direct_download"
+        url: "https://www.adobe.com/fr/products/photoshop.html"
+        priority: 1
+
+  - name: "Adobe Substance Painter"
+    description: "Logiciel de texturing 3D"
+    category: "Graphisme"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "direct_download"
+        url: "https://www.adobe.com/fr/products/substance3d-painter.html"
+        priority: 1
+
+  - name: "Adobe Substance Designer"
+    description: "Logiciel de création de matériaux procéduraux"
+    category: "Graphisme"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "direct_download"
+        url: "https://www.adobe.com/fr/products/substance3d-designer.html"
+        priority: 1
+
+  - name: "Adobe Media Encoder"
+    description: "Outil d'encodage vidéo et audio"
+    category: "Multimédia"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "direct_download"
+        url: "https://www.adobe.com/fr/products/media-encoder.html"
+        priority: 1
+
+  - name: "Adobe After Effects"
+    description: "Logiciel de motion design et d'effets visuels"
+    category: "Multimédia"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "direct_download"
+        url: "https://www.adobe.com/fr/products/aftereffects.html"
+        priority: 1
+
+  - name: "FileZilla"
+    description: "Client FTP, FTPS et SFTP"
+    category: "Utilitaires"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "winget"
+        package: "FileZilla.Client"
+        priority: 1
+      - type: "chocolatey"
+        package: "filezilla"
+        priority: 2

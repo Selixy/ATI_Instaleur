@@ -1,0 +1,21 @@
+/* ===========================
+   PALETTE LIGHT THEME
+   =========================== */
+
+{{COLOR_BG}}: #ffffff;
+{{COLOR_TITLEBAR_BG}}: #f3f3f3;
+{{COLOR_TITLEBAR_BORDER}}: #d1d1d1;
+{{COLOR_TEXT}}: #333333;
+{{COLOR_TEXT_HOVER}}: #000000;
+{{COLOR_BTN_HOVER}}: #e5e5e5;
+{{COLOR_BTN_PRESSED}}: #cce7ff;
+
+/* Boutons Windows spécifiques */
+{{COLOR_WIN_BTN_NORMAL}}: transparent;
+{{COLOR_WIN_BTN_NORMAL_TEXT}}: #333333;
+{{COLOR_WIN_BTN_HOVER}}: #e5e5e5;
+{{COLOR_WIN_BTN_HOVER_TEXT}}: #000000;
+{{COLOR_WIN_BTN_PRESSED}}: #cce7ff;
+{{COLOR_WIN_BTN_PRESSED_TEXT}}: #000000;
+{{COLOR_WIN_BTN_CLOSE_HOVER}}: #e81123;
+{{COLOR_WIN_BTN_CLOSE_TEXT}}: #ffffff;
