@@ -1,10 +1,10 @@
 """
 Chargeur de configuration épuré pour les applications à installer.
-Version simplifiée qui conserve les signatures existantes.
+Version avec support PyInstaller.
 """
 
 import yaml
-import os
+import sys
 from pathlib import Path
 from typing import List, Dict, Optional, Any
 from dataclasses import dataclass
@@ -53,34 +53,64 @@ class Application:
 
 
 class ConfigurationLoader:
-    """Chargeur de configuration simplifié."""
+    """Chargeur de configuration simplifié avec support PyInstaller."""
     
     def __init__(self, config_path: Optional[str] = None):
+        self._is_frozen = getattr(sys, 'frozen', False)
+        
         if config_path is None:
-            # Chercher le fichier de config dans plusieurs emplacements
-            possible_paths = [
-                Path("config/config.yaml"),
-                Path("../config/config.yaml"),  
-                Path("app/config/config.yaml"),
-                Path(__file__).parent.parent / "config" / "config.yaml"
-            ]
-            
-            for path in possible_paths:
-                if path.exists():
-                    self.config_path = path
-                    break
-            else:
-                self.config_path = None
+            self.config_path = self._find_config_file()
         else:
             self.config_path = Path(config_path)
         
         self.applications: List[Application] = []
         self.load_configuration()
     
+    def _find_config_file(self) -> Optional[Path]:
+        """Trouve le fichier de configuration selon le contexte d'exécution."""
+        candidates = []
+        
+        if self._is_frozen:
+            # Mode PyInstaller
+            exe_dir = Path(sys.executable).parent
+            meipass = Path(getattr(sys, "_MEIPASS", exe_dir))
+            
+            candidates = [
+                exe_dir / "config" / "config.yaml",
+                exe_dir / "config.yaml", 
+                meipass / "config" / "config.yaml",
+                meipass / "config.yaml",
+            ]
+        else:
+            # Mode développement - chercher depuis la racine du projet
+            current_file = Path(__file__).resolve()
+            # core/config_loader.py -> core/ -> app/ -> projet/
+            project_root = current_file.parent.parent.parent
+            
+            candidates = [
+                project_root / "config" / "config.yaml",
+                project_root / "config.yaml",
+                project_root / "app" / "config" / "config.yaml",
+                project_root / "app" / "config.yaml",
+            ]
+        
+        # Debug
+        print(f"[ConfigLoader] Mode: {'PyInstaller' if self._is_frozen else 'Développement'}")
+        print(f"[ConfigLoader] Recherche config.yaml dans:")
+        
+        for candidate in candidates:
+            print(f"  - {candidate}")
+            if candidate.exists():
+                print(f"  ✓ Trouvé: {candidate}")
+                return candidate
+        
+        print("  ❌ config.yaml introuvable!")
+        return None
+    
     def load_configuration(self) -> None:
         """Charge la configuration depuis le fichier YAML."""
         if not self.config_path or not self.config_path.exists():
-            print(f"[WARNING] Fichier de configuration non trouvé: {self.config_path}")
+            print(f"[ERROR] Fichier de configuration non trouvé: {self.config_path}")
             return
         
         try:
@@ -88,7 +118,7 @@ class ConfigurationLoader:
                 config_data = yaml.safe_load(file)
             
             self._parse_applications(config_data.get('applications', []))
-            print(f"[INFO] Configuration chargée depuis {self.config_path}")
+            print(f"[INFO] Configuration chargée: {len(self.applications)} applications depuis {self.config_path}")
             
         except yaml.YAMLError as e:
             print(f"[ERROR] Erreur YAML lors du chargement: {e}")
