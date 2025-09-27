@@ -8,7 +8,37 @@ import time
 
 from .hook.status import InstallationResult, InstallationStatus, InstallationMethod
 from .hook.progress import ProgressTracker, ProgressInfo
-from .winget import WingetInstaller
+
+# Imports sécurisés des installateurs
+try:
+    from .winget import WingetInstaller
+except ImportError as e:
+    print(f"Impossible d'importer WingetInstaller: {e}")
+    WingetInstaller = None
+
+try:
+    from .direct_download import DirectDownloadInstaller
+except ImportError as e:
+    print(f"Impossible d'importer DirectDownloadInstaller: {e}")
+    DirectDownloadInstaller = None
+
+try:
+    from .msi import MsiInstaller
+except ImportError as e:
+    print(f"Impossible d'importer MsiInstaller: {e}")
+    MsiInstaller = None
+
+try:
+    from .exe import ExeInstaller
+except ImportError as e:
+    print(f"Impossible d'importer ExeInstaller: {e}")
+    ExeInstaller = None
+
+try:
+    from .chocolatey import ChocolateyInstaller
+except ImportError as e:
+    print(f"Impossible d'importer ChocolateyInstaller: {e}")
+    ChocolateyInstaller = None
 
 
 class MainInstaller:
@@ -16,9 +46,32 @@ class MainInstaller:
     
     def __init__(self):
         self.progress_tracker = ProgressTracker()
-        self.installers = {
-            InstallationMethod.WINGET: WingetInstaller()
+        self.installers = {}
+
+        # Initialiser les installateurs de manière sécurisée
+        installer_classes = {
+            InstallationMethod.WINGET: WingetInstaller,
+            InstallationMethod.DIRECT_DOWNLOAD: DirectDownloadInstaller,
+            InstallationMethod.MSI: MsiInstaller,
+            InstallationMethod.EXE: ExeInstaller,
+            InstallationMethod.CHOCOLATEY: ChocolateyInstaller
         }
+
+        for method, installer_class in installer_classes.items():
+            # Vérifier que la classe existe (pas None à cause des imports ratés)
+            if installer_class is None:
+                print(f"Classe {method.value} non disponible (import raté)")
+                continue
+
+            try:
+                installer = installer_class()
+                installer.progress_tracker = self.progress_tracker
+                self.installers[method] = installer
+                print(f"OK Installateur {method.value} initialisé avec succès")
+            except Exception as e:
+                # Si un installateur ne peut pas être créé, on continue sans lui
+                print(f"ERROR Impossible de créer l'installateur {method.value}: {e}")
+                continue
         self.is_cancelled = False
         self.installation_stats = {
             'successful': 0,
@@ -27,6 +80,13 @@ class MainInstaller:
             'not_found': 0,
             'cancelled': 0
         }
+
+        # Vérifier qu'on a au moins un installateur
+        if not self.installers:
+            print("WARNING: Aucun installateur disponible !")
+        else:
+            available_methods = list(self.installers.keys())
+            print(f"INFO Installateurs disponibles: {[m.value for m in available_methods]}")
     
     def set_progress_callback(self, callback: Callable[[ProgressInfo], None]) -> None:
         """Définit le callback de progression pour tous les installateurs."""
@@ -152,19 +212,40 @@ class MainInstaller:
             if not installer:
                 continue
             
-            # Vérifier que l'installateur est disponible
-            availability = installer.check_availability()
-            if not availability.is_success:
-                if len(methods_to_try) == 1:
-                    # Si c'est la seule méthode, retourner l'erreur
-                    return availability
-                else:
-                    # Sinon, essayer la méthode suivante
-                    last_result = availability
-                    continue
-            
-            # Essayer l'installation
-            result = installer.install_package(package_name, **kwargs)
+            # Vérifier que l'installateur est disponible (avec protection)
+            try:
+                availability = installer.check_availability()
+                if not availability.is_success:
+                    if len(methods_to_try) == 1:
+                        # Si c'est la seule méthode, retourner l'erreur
+                        return availability
+                    else:
+                        # Sinon, essayer la méthode suivante
+                        last_result = availability
+                        continue
+            except Exception as e:
+                # Si la vérification de disponibilité plante, passer à la méthode suivante
+                last_result = InstallationResult(
+                    status=InstallationStatus.FAILED,
+                    message=f"Erreur lors de la vérification de {method.value}: {e}",
+                    package_name=package_name,
+                    method=method
+                )
+                continue
+
+            # Essayer l'installation (avec protection)
+            try:
+                result = installer.install_package(package_name, **kwargs)
+            except Exception as e:
+                # Si l'installation plante, créer un résultat d'erreur et continuer
+                result = InstallationResult(
+                    status=InstallationStatus.FAILED,
+                    message=f"Erreur critique avec {method.value}: {e}",
+                    package_name=package_name,
+                    method=method
+                )
+                last_result = result
+                continue
             
             # Si succès ou déjà installé, on s'arrête
             if result.is_success:
@@ -185,6 +266,13 @@ class MainInstaller:
             package_name=package_name,
             method=preferred_method
         )
+
+    def install_package(self, package_name: str, **kwargs) -> InstallationResult:
+        """
+        Méthode pour installer un seul package (alias pour install_single_package).
+        Utilisée par le thread pour la compatibilité.
+        """
+        return self.install_single_package(package_name, **kwargs)
     
     def check_system_compatibility(self) -> Dict[InstallationMethod, InstallationResult]:
         """

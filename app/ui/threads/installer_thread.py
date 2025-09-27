@@ -24,6 +24,7 @@ class InstallerThread(QThread):
     update_current_progress = Signal(int)   # Progression du package en cours (0-100)
     update_log = Signal(str)               # Message de log
     update_current_app = Signal(str)       # Nom de l'app en cours
+    update_current_step = Signal(str)      # Étape courante (MB/s, etc.)
     finished = Signal()                    # Installation terminée
     cancelled = Signal()                   # Installation annulée
     
@@ -77,20 +78,41 @@ class InstallerThread(QThread):
             method_names = [method.value for method in available_methods]
             self.update_log.emit(f"Méthodes disponibles: {', '.join(method_names)}")
             
-            # Convertir les noms d'applications en packages à installer
-            packages_to_install = self._resolve_packages_from_config()
-            
-            if not packages_to_install:
-                self.update_log.emit("Aucun package valide trouvé dans la configuration")
+            # Résoudre les applications avec leurs méthodes d'installation appropriées
+            apps_to_install_with_methods = self._resolve_apps_with_methods()
+
+            if not apps_to_install_with_methods:
+                self.update_log.emit("Aucune application installable trouvée dans la configuration")
                 self.finished.emit()
                 return
-            
-            # Lancer les installations avec les vrais packages ID
-            results = self.installer.install_packages(
-                packages_to_install,
-                preferred_method=InstallationMethod.WINGET
-            )
-            
+
+            # Lancer les installations une par une pour avoir la progression détaillée
+            results = {}
+            total_apps = len(apps_to_install_with_methods)
+
+            for i, (app_name, package_id, method) in enumerate(apps_to_install_with_methods):
+                if self.is_cancelled:
+                    break
+
+                # Mettre à jour l'index de l'app courante
+                if app_name in self.apps_to_install:
+                    self.current_app_index = self.apps_to_install.index(app_name)
+                    self.update_current_app.emit(app_name)
+
+                # Configurer le tracker pour la progression globale
+                self.installer.progress_tracker.reset(total_apps)
+                self.installer.progress_tracker.completed_packages = i
+
+                # Installer le package avec la méthode appropriée
+                result = self.installer.install_single_package(
+                    package_id,
+                    preferred_method=method
+                )
+                results[package_id] = result
+
+                # Marquer comme terminé
+                self.installer.progress_tracker.complete_package()
+
             # Traiter les résultats finaux
             self._process_final_results(results)
             
@@ -103,45 +125,81 @@ class InstallerThread(QThread):
             self.update_log.emit(f"Erreur critique dans le thread: {str(e)}")
             self.finished.emit()
     
-    def _resolve_packages_from_config(self) -> List[str]:
+    def _resolve_apps_with_methods(self) -> List[tuple]:
         """
-        Convertit les noms d'applications en packages ID à installer selon la configuration.
-        
+        Résout les applications avec leurs méthodes d'installation appropriées.
+
         Returns:
-            List[str]: Liste des packages ID à installer
+            List[tuple]: Liste de (app_name, package_id, method) à installer
         """
-        packages_to_install = []
-        
+        apps_with_methods = []
+
+        # Mapping des types de méthodes vers les enums
+        method_mapping = {
+            "winget": InstallationMethod.WINGET,
+            "direct_download": InstallationMethod.DIRECT_DOWNLOAD,
+            "msi": InstallationMethod.MSI,
+            "exe": InstallationMethod.EXE,
+            "chocolatey": InstallationMethod.CHOCOLATEY
+        }
+
         for app_name in self.apps_to_install:
             app = self.config_loader.get_application_by_name(app_name)
-            
+
             if not app:
                 self.update_log.emit(f"⚠️ Application '{app_name}' non trouvée dans la configuration")
                 continue
-            
-            # Chercher une méthode Winget en priorité
-            winget_methods = app.get_methods_by_type("winget")
-            if winget_methods:
-                # Prendre la méthode Winget avec la meilleure priorité
-                best_method = min(winget_methods, key=lambda x: x.priority)
-                if best_method.package:
-                    packages_to_install.append(best_method.package)
-                    self.update_log.emit(f"📦 {app_name} → {best_method.package}")
-                else:
-                    self.update_log.emit(f"⚠️ {app_name} - Méthode Winget sans package défini")
+
+            # Trouver la méthode préférée disponible
+            preferred_method = app.get_preferred_method()
+
+            if not preferred_method:
+                self.update_log.emit(f"⚠️ {app_name} - Aucune méthode d'installation configurée")
+                continue
+
+            # Vérifier que la méthode est supportée
+            method_enum = method_mapping.get(preferred_method.type)
+            if not method_enum:
+                self.update_log.emit(f"⚠️ {app_name} - Méthode '{preferred_method.type}' non supportée")
+                continue
+
+            # Vérifier que l'installateur correspondant est disponible
+            if method_enum not in self.installer.installers:
+                self.update_log.emit(f"⚠️ {app_name} - Installateur {preferred_method.type} non disponible")
+                continue
+
+            # Déterminer le package_id selon la méthode
+            package_id = self._get_package_id_for_method(app, preferred_method)
+
+            if package_id:
+                apps_with_methods.append((app_name, package_id, method_enum))
+                self.update_log.emit(f"📦 {app_name} → {package_id} via {preferred_method.type}")
             else:
-                # Pas de méthode Winget disponible
-                self.update_log.emit(f"⚠️ {app_name} - Aucune méthode Winget disponible")
-                
-                # Optionnel: essayer d'autres méthodes
-                preferred_method = app.get_preferred_method()
-                if preferred_method:
-                    if preferred_method.type == "direct_download":
-                        self.update_log.emit(f"🌐 {app_name} - Installation manuelle requise: {preferred_method.url}")
-                    else:
-                        self.update_log.emit(f"⚠️ {app_name} - Méthode {preferred_method.type} non supportée actuellement")
-        
-        return packages_to_install
+                self.update_log.emit(f"⚠️ {app_name} - Package ID non défini pour {preferred_method.type}")
+
+        return apps_with_methods
+
+    def _get_package_id_for_method(self, app, method):
+        """
+        Obtient le package ID approprié selon la méthode d'installation.
+
+        Args:
+            app: L'objet application
+            method: La méthode d'installation
+
+        Returns:
+            str: Le package ID ou nom pour l'installation
+        """
+        # Pour Winget et Chocolatey, utiliser le package ID
+        if method.type in ["winget", "chocolatey"]:
+            return method.package if hasattr(method, 'package') else None
+
+        # Pour les autres méthodes, utiliser le nom de l'application comme identifiant
+        elif method.type in ["direct_download", "msi", "exe"]:
+            # On simule, donc on utilise juste le nom de l'app
+            return app.name
+
+        return None
     
     def _on_progress_update(self, progress_info: ProgressInfo):
         """
@@ -176,6 +234,10 @@ class InstallerThread(QThread):
         # Émettre le message de log s'il n'est pas vide
         if progress_info.message.strip():
             self.update_log.emit(progress_info.message)
+
+        # Émettre l'étape courante (infos de téléchargement)
+        if progress_info.current_step.strip():
+            self.update_current_step.emit(progress_info.current_step)
     
     def _get_app_name_from_package(self, package_id: str) -> str:
         """

@@ -37,9 +37,11 @@ applications:
     icon: ""
     enabled: true
     methods:
+      - type: "exe"
+        priority: 1
       - type: "direct_download"
         url: "https://www.synctrazor.com/download"
-        priority: 1
+        priority: 2
 
   - name: "PowerToys"
     description: "Utilitaires système pour améliorer la productivité sous Windows"
@@ -60,9 +62,11 @@ applications:
     icon: ""
     enabled: true
     methods:
+      - type: "msi"
+        priority: 1
       - type: "direct_download"
         url: "https://www.pureref.com/download"
-        priority: 1
+        priority: 2
 
   - name: "DJV"
     description: "Visionneuse d'images et de vidéos pour les professionnels de la 3D"
@@ -172,9 +176,13 @@ applications:
     icon: ""
     enabled: true
     methods:
+      - type: "exe"
+        priority: 1
+      - type: "msi"
+        priority: 2
       - type: "direct_download"
         url: "https://unity.com/download"
-        priority: 1
+        priority: 3
 
   - name: "The Foundry NukeX"
     description: "Logiciel de composition et d'effets visuels"

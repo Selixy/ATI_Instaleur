@@ -147,8 +147,14 @@ class InstallationPage(QWidget):
         self.global_percent_label.setText("0%")
         self.current_percent_label.setText("0%")
         self.subtitle_label.setText(f"Installation de {len(apps_to_install)} applications")
-        self.current_app_label.setText("Préparation...")
-        self.current_step_label.setText("Initialisation...")
+
+        # Afficher le nom de la première application au lieu de "Préparation..."
+        if apps_to_install:
+            self.current_app_label.setText(apps_to_install[0])
+            self.current_step_label.setText("Préparation du téléchargement...")
+        else:
+            self.current_app_label.setText("Aucune application")
+            self.current_step_label.setText("Rien à installer")
 
         # Création et démarrage du thread d'installation
         self.installer_thread = InstallerThread(apps_to_install)
@@ -158,6 +164,7 @@ class InstallationPage(QWidget):
         self.installer_thread.update_current_progress.connect(self.update_current_progress)
         self.installer_thread.update_log.connect(self.update_log)
         self.installer_thread.update_current_app.connect(self.update_current_app)
+        self.installer_thread.update_current_step.connect(self.update_current_step)
         self.installer_thread.finished.connect(self.on_installation_finished)
         self.installer_thread.cancelled.connect(self.on_installation_cancelled)
 
@@ -183,6 +190,10 @@ class InstallationPage(QWidget):
         """Met à jour le nom de l'application en cours d'installation."""
         self.current_app_label.setText(app_name)
 
+    def update_current_step(self, step_info):
+        """Met à jour les infos de téléchargement (MB/s, progression)."""
+        self.current_step_label.setText(step_info)
+
     def cancel_installation(self):
         """Annule l'installation en cours."""
         if self.installer_thread and self.installer_thread.isRunning():
@@ -199,5 +210,5 @@ class InstallationPage(QWidget):
         self.cancel_button.setVisible(False)
 
     def on_finish_clicked(self):
-        """Émet le signal de fin d'installation."""
-        self.installation_finished.emit()
+        """Émet le signal pour revenir à la page de sélection."""
+        self.back_to_selection.emit()

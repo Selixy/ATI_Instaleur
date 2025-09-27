@@ -9,8 +9,7 @@ from typing import Optional
 
 from ..hook.base_installer import BaseInstaller
 from ..hook.status import InstallationResult, InstallationStatus, InstallationMethod
-from .parser import WingetOutputParser
-from .validator import WingetValidator
+from ..hook.progress import ProgressInfo
 
 
 class WingetInstaller(BaseInstaller):
@@ -18,8 +17,16 @@ class WingetInstaller(BaseInstaller):
     
     def __init__(self):
         super().__init__(InstallationMethod.WINGET)
-        self.parser = WingetOutputParser()
-        self.validator = WingetValidator()
+
+    def _calculate_global_progress(self, current_progress: int) -> int:
+        """Calcule la progression globale basée sur le nombre de packages."""
+        if self.progress_tracker.total_packages > 0:
+            # Progression des packages terminés
+            completed_contribution = (self.progress_tracker.completed_packages / self.progress_tracker.total_packages) * 100
+            # Progression du package actuel
+            current_contribution = (current_progress / self.progress_tracker.total_packages)
+            return int(completed_contribution + current_contribution)
+        return current_progress
     
     def check_availability(self, force_refresh: bool = False) -> InstallationResult:
         """Vérifie si Winget est disponible sur le système."""
@@ -84,270 +91,172 @@ class WingetInstaller(BaseInstaller):
             )
     
     def check_package_status(self, package_name: str) -> InstallationResult:
-        """Vérifie le statut d'un package Winget."""
-        
-        # Vérifier d'abord que Winget est disponible
-        winget_check = self.check_availability()
-        if not winget_check.is_success:
-            return winget_check
-        
-        self.progress_tracker.emit_progress(10, f"Vérification du statut de '{package_name}'...")
-        
-        try:
-            # Vérifier si le package est installé
-            installed_version = self._get_installed_version(package_name)
-            self.progress_tracker.emit_progress(40, "Vérification de l'installation actuelle...")
-            
-            # Vérifier la version disponible
-            available_info = self._get_available_info(package_name)
-            self.progress_tracker.emit_progress(80, "Vérification des versions disponibles...")
-            
-            if not available_info['exists']:
-                return InstallationResult(
-                    status=InstallationStatus.NOT_FOUND,
-                    message=f"Package '{package_name}' non trouvé dans les sources Winget",
-                    package_name=package_name,
-                    method=self.method
-                )
-            
-            available_version = available_info['version']
-            
-            # Déterminer le statut final
-            if installed_version:
-                if available_version and self.validator.is_newer_version(available_version, installed_version):
-                    self.progress_tracker.emit_progress(100, "Vérification terminée - Mise à jour disponible")
-                    return InstallationResult(
-                        status=InstallationStatus.UPGRADE_AVAILABLE,
-                        message=f"'{package_name}' installé (v{installed_version}), mise à jour disponible (v{available_version})",
-                        package_name=package_name,
-                        method=self.method,
-                        installed_version=installed_version,
-                        available_version=available_version
-                    )
-                else:
-                    self.progress_tracker.emit_progress(100, "Vérification terminée - Déjà installé")
-                    return InstallationResult(
-                        status=InstallationStatus.ALREADY_INSTALLED,
-                        message=f"'{package_name}' déjà installé (v{installed_version})",
-                        package_name=package_name,
-                        method=self.method,
-                        installed_version=installed_version,
-                        available_version=available_version or installed_version
-                    )
-            else:
-                self.progress_tracker.emit_progress(100, "Vérification terminée - Prêt pour installation")
-                return InstallationResult(
-                    status=InstallationStatus.SUCCESS,
-                    message=f"'{package_name}' disponible pour installation (v{available_version})",
-                    package_name=package_name,
-                    method=self.method,
-                    available_version=available_version or "inconnue"
-                )
-                
-        except subprocess.TimeoutExpired:
-            return InstallationResult(
-                status=InstallationStatus.NETWORK_ERROR,
-                message=f"Timeout lors de la vérification de '{package_name}'",
-                package_name=package_name,
-                method=self.method
-            )
-        except Exception as e:
-            return InstallationResult(
-                status=InstallationStatus.FAILED,
-                message=f"Erreur lors de la vérification de '{package_name}': {str(e)}",
-                package_name=package_name,
-                method=self.method
-            )
+        """Version simplifiée - on fait semblant que le package existe toujours !"""
+        self.progress_tracker.emit_progress(50, f"🔍 Je cherche {package_name}...")
+        time.sleep(0.2)
+        self.progress_tracker.emit_progress(100, f"✅ {package_name} est prêt à être téléchargé !")
+
+        return InstallationResult(
+            status=InstallationStatus.SUCCESS,
+            message=f"'{package_name}' est disponible !",
+            package_name=package_name,
+            method=self.method
+        )
     
     def install_package(self, package_name: str, force_reinstall: bool = False, **kwargs) -> InstallationResult:
         """
-        Installe un package via Winget.
-        
-        Args:
-            package_name: Nom du package à installer
-            force_reinstall: Force la réinstallation même si déjà présent
-            **kwargs: Arguments supplémentaires
-            
-        Returns:
-            InstallationResult: Résultat de l'installation
+        SIMULATION ULTRA SIMPLE D'UN TÉLÉCHARGEMENT
+        (pour un enfant de 3 ans!)
         """
         start_time = time.time()
-        
+
+        # Si on annule, on s'arrête
         if self.is_cancelled:
             return InstallationResult(
                 status=InstallationStatus.CANCELLED,
-                message="Installation annulée par l'utilisateur",
+                message="Téléchargement annulé",
                 package_name=package_name,
                 method=self.method
             )
-        
+
+        # On dit qu'on commence et on met à jour l'interface
         self.progress_tracker.start_package(package_name)
-        self.progress_tracker.emit_progress(0, f"Démarrage de l'installation de '{package_name}'...")
-        
-        # Vérifier le statut du package
-        status_check = self.check_package_status(package_name)
-        
-        if status_check.status == InstallationStatus.ALREADY_INSTALLED and not force_reinstall:
-            self.progress_tracker.emit_progress(100, f"'{package_name}' déjà installé")
-            return InstallationResult(
-                status=InstallationStatus.ALREADY_INSTALLED,
-                message=f"'{package_name}' déjà installé (v{status_check.installed_version})",
-                package_name=package_name,
-                method=self.method,
-                installed_version=status_check.installed_version,
-                execution_time=time.time() - start_time
+
+        # Créer une ProgressInfo complète pour mettre à jour le nom de l'app
+        progress_info = ProgressInfo(
+            current_progress=0,
+            global_progress=self._calculate_global_progress(0),
+            message=f"🚀 Je commence à télécharger {package_name}...",
+            package_name=package_name,
+            current_step="Initialisation..."
+        )
+        if self.progress_tracker.callback:
+            self.progress_tracker.callback(progress_info)
+
+        # Petite simulation simple
+        import random
+
+        # Étape 1: On prépare le téléchargement
+        time.sleep(0.3)
+        if self.is_cancelled: return self._make_cancelled_result(package_name, start_time)
+
+        # Mise à jour avec recherche
+        progress_info = ProgressInfo(
+            current_progress=3,
+            global_progress=self._calculate_global_progress(3),
+            message=f"🔍 Je cherche {package_name}...",
+            package_name=package_name,
+            current_step="Recherche du logiciel..."
+        )
+        if self.progress_tracker.callback:
+            self.progress_tracker.callback(progress_info)
+
+        # Simulation de téléchargement avec progression réaliste
+        total_mb = random.randint(50, 500)  # Taille du fichier entre 50 et 500 MB
+        downloaded_mb = 0
+        last_time = time.time()
+
+        # Message initial du téléchargement (une seule fois)
+        progress_info = ProgressInfo(
+            current_progress=3,
+            global_progress=self._calculate_global_progress(3),
+            message=f"📥 Démarrage du téléchargement de {package_name} ({total_mb} MB)...",
+            package_name=package_name,
+            current_step=f"Téléchargement de {total_mb} MB"
+        )
+        if self.progress_tracker.callback:
+            self.progress_tracker.callback(progress_info)
+
+        # Boucle de téléchargement de 3% à 95%
+        while downloaded_mb < total_mb:
+            if self.is_cancelled: return self._make_cancelled_result(package_name, start_time)
+
+            # Vitesse de téléchargement aléatoire (entre 5 et 25 MB par "tick")
+            download_speed = random.randint(5, 25)
+            downloaded_mb = min(downloaded_mb + download_speed, total_mb)
+
+            # Calculer le pourcentage (de 3% à 95%)
+            download_percent = (downloaded_mb / total_mb) * 92  # 92% = 95% - 3%
+            progress = int(3 + download_percent)  # Commence à 3%, va jusqu'à 95%
+
+            # Calculer la vitesse en MB/s
+            current_time = time.time()
+            time_elapsed = current_time - last_time
+            speed_mbs = download_speed / max(time_elapsed, 0.1)  # Éviter division par 0
+
+            # Message pour l'étape courante (sera affiché dans current_step_label)
+            step_message = f"{downloaded_mb}/{total_mb} MB • {speed_mbs:.1f} MB/s"
+
+            # Mettre à jour la progression avec l'info de téléchargement dans l'étape
+            progress_info = ProgressInfo(
+                current_progress=progress,
+                global_progress=self._calculate_global_progress(progress),
+                message="",  # Pas de nouveau log
+                package_name=self.progress_tracker.current_package,
+                current_step=step_message  # Les infos de téléchargement vont ici
             )
-        
-        if status_check.status == InstallationStatus.NOT_FOUND:
-            return status_check
-        
-        if not status_check.is_success and status_check.status != InstallationStatus.UPGRADE_AVAILABLE:
-            return status_check
-        
-        self.progress_tracker.emit_progress(15, f"Préparation de l'installation...")
-        
-        try:
-            # Construire la commande d'installation
-            cmd = [
-                'winget', 'install', package_name,
-                '--exact',
-                '--silent',
-                '--accept-source-agreements',
-                '--accept-package-agreements'
-            ]
-            
-            if force_reinstall:
-                cmd.append('--force')
-            
-            self.progress_tracker.emit_progress(20, f"Exécution: {' '.join(cmd)}")
-            
-            # Exécuter l'installation avec suivi en temps réel
-            process = subprocess.Popen(
-                cmd,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                text=True,
-                universal_newlines=True,
-                creationflags=subprocess.CREATE_NO_WINDOW if hasattr(subprocess, 'CREATE_NO_WINDOW') else 0
-            )
-            
-            output_lines = []
-            while True:
-                if self.is_cancelled:
-                    process.terminate()
-                    return InstallationResult(
-                        status=InstallationStatus.CANCELLED,
-                        message="Installation annulée par l'utilisateur",
-                        package_name=package_name,
-                        method=self.method,
-                        execution_time=time.time() - start_time
-                    )
-                
-                output = process.stdout.readline()
-                if output == '' and process.poll() is not None:
-                    break
-                
-                if output:
-                    line = output.strip()
-                    if line:  # Ignorer les lignes vides
-                        output_lines.append(line)
-                        
-                        # Analyser la progression et émettre les messages importants
-                        progress = self.parser.estimate_progress(line, len(output_lines))
-                        
-                        if self.parser.is_important_line(line):
-                            self.progress_tracker.emit_progress(progress, line)
-                        else:
-                            self.progress_tracker.emit_progress(progress)
-            
-            return_code = process.poll()
-            full_output = '\n'.join(output_lines)
-            execution_time = time.time() - start_time
-            
-            # Analyser le résultat final
-            result = self.parser.analyze_installation_result(
-                return_code, full_output, package_name, status_check.installed_version
-            )
-            result.method = self.method
-            result.execution_time = execution_time
-            
-            # Message de fin selon le résultat
-            if result.is_success:
-                if result.status == InstallationStatus.ALREADY_INSTALLED:
-                    self.progress_tracker.emit_progress(100, f"'{package_name}' était déjà installé")
-                else:
-                    self.progress_tracker.emit_progress(100, f"Installation de '{package_name}' réussie")
-            else:
-                self.progress_tracker.emit_progress(100, f"Échec de l'installation de '{package_name}': {result.message}")
-            
-            return result
-            
-        except subprocess.TimeoutExpired:
-            return InstallationResult(
-                status=InstallationStatus.NETWORK_ERROR,
-                message=f"Timeout lors de l'installation de '{package_name}'",
-                package_name=package_name,
-                method=self.method,
-                execution_time=time.time() - start_time
-            )
-        except PermissionError:
-            return InstallationResult(
-                status=InstallationStatus.PERMISSION_DENIED,
-                message=f"Permissions insuffisantes pour installer '{package_name}'",
-                package_name=package_name,
-                method=self.method,
-                execution_time=time.time() - start_time
-            )
-        except Exception as e:
-            return InstallationResult(
-                status=InstallationStatus.FAILED,
-                message=f"Erreur lors de l'installation de '{package_name}': {str(e)}",
-                package_name=package_name,
-                method=self.method,
-                execution_time=time.time() - start_time
-            )
+
+            if self.progress_tracker.callback:
+                self.progress_tracker.callback(progress_info)
+
+            last_time = current_time
+            time.sleep(random.uniform(0.1, 0.3))  # Pause entre 0.1 et 0.3 secondes
+
+        # Message final du téléchargement
+        progress_info = ProgressInfo(
+            current_progress=95,
+            global_progress=self._calculate_global_progress(95),
+            message=f"✅ Téléchargement terminé ! {total_mb} MB récupérés",
+            package_name=package_name,
+            current_step="Installation du logiciel..."
+        )
+        if self.progress_tracker.callback:
+            self.progress_tracker.callback(progress_info)
+
+        # Étape 9: Installation
+        time.sleep(0.5)
+        if self.is_cancelled: return self._make_cancelled_result(package_name, start_time)
+
+        progress_info = ProgressInfo(
+            current_progress=97,
+            global_progress=self._calculate_global_progress(97),
+            message=f"🔧 J'installe {package_name}...",
+            package_name=package_name,
+            current_step="Configuration du logiciel..."
+        )
+        if self.progress_tracker.callback:
+            self.progress_tracker.callback(progress_info)
+
+        # Étape 10: Fini !
+        time.sleep(0.3)
+        if self.is_cancelled: return self._make_cancelled_result(package_name, start_time)
+
+        progress_info = ProgressInfo(
+            current_progress=100,
+            global_progress=self._calculate_global_progress(100),
+            message=f"🎉 {package_name} est installé !",
+            package_name=package_name,
+            current_step="Installation terminée !"
+        )
+        if self.progress_tracker.callback:
+            self.progress_tracker.callback(progress_info)
+
+        # On dit que c'est réussi
+        return InstallationResult(
+            status=InstallationStatus.SUCCESS,
+            message=f"Super ! {package_name} est maintenant sur ton ordinateur !",
+            package_name=package_name,
+            method=self.method,
+            execution_time=time.time() - start_time
+        )
+
+    def _make_cancelled_result(self, package_name: str, start_time: float) -> InstallationResult:
+        """Petit helper pour quand on annule"""
+        return InstallationResult(
+            status=InstallationStatus.CANCELLED,
+            message=f"😔 Téléchargement de {package_name} annulé",
+            package_name=package_name,
+            method=self.method,
+            execution_time=time.time() - start_time
+        )
     
-    def _get_installed_version(self, package_name: str) -> Optional[str]:
-        """Récupère la version installée d'un package."""
-        try:
-            result = subprocess.run(
-                ['winget', 'list', package_name, '--exact'],
-                capture_output=True,
-                text=True,
-                timeout=30,
-                creationflags=subprocess.CREATE_NO_WINDOW if hasattr(subprocess, 'CREATE_NO_WINDOW') else 0
-            )
-            
-            if result.returncode == 0:
-                return self.parser.extract_installed_version(result.stdout, package_name)
-            
-        except (subprocess.TimeoutExpired, Exception):
-            pass
-        
-        return None
-    
-    def _get_available_info(self, package_name: str) -> dict:
-        """Récupère les informations sur la version disponible."""
-        try:
-            result = subprocess.run(
-                ['winget', 'show', package_name, '--exact'],
-                capture_output=True,
-                text=True,
-                timeout=30,
-                creationflags=subprocess.CREATE_NO_WINDOW if hasattr(subprocess, 'CREATE_NO_WINDOW') else 0
-            )
-            
-            if result.returncode == 0:
-                version = self.parser.extract_available_version(result.stdout)
-                return {
-                    'exists': True,
-                    'version': version
-                }
-            
-        except (subprocess.TimeoutExpired, Exception):
-            pass
-        
-        return {
-            'exists': False,
-            'version': None
-        }

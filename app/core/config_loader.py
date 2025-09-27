@@ -101,10 +101,10 @@ class ConfigurationLoader:
         for candidate in candidates:
             print(f"  - {candidate}")
             if candidate.exists():
-                print(f"  ✓ Trouvé: {candidate}")
+                print(f"  OK Trouvé: {candidate}")
                 return candidate
-        
-        print("  ❌ config.yaml introuvable!")
+
+        print("  ERROR config.yaml introuvable!")
         return None
     
     def load_configuration(self) -> None:

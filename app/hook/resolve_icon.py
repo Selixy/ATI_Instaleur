@@ -28,8 +28,8 @@ def resolve_icon(icon_name: str) -> Optional[str]:
     for path in candidates:
         print(f"  - {path}")
         if path.exists():
-            print(f"  ✓ Found at: {path}")
+            print(f"  OK Found at: {path}")
             return str(path)
 
-    print(f"  ✗ Icon not found: {icon_name}")
+    print(f"  ERROR Icon not found: {icon_name}")
     return None

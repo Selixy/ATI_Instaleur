@@ -156,11 +156,11 @@ class StyleFinder:
             self._log(f"  Vérification: {qss_file}")
             
             if qss_file.exists() and qss_file.is_file():
-                self._log(f"✓ Fichier trouvé: {qss_file}")
+                self._log(f"OK Fichier trouvé: {qss_file}")
                 self._cache[cache_key] = qss_file
                 return qss_file
 
-        self._log(f"❌ Fichier '{filename}' introuvable")
+        self._log(f"ERROR Fichier '{filename}' introuvable")
         return None
 
     def find_mode_file(self, mode: Optional[str] = None) -> Optional[Path]:
