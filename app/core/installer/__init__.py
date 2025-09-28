@@ -17,7 +17,7 @@ from .hook import (
 )
 
 # Import des installateurs spécifiques
-from .winget import WingetInstaller
+# Note: Les installateurs spécifiques sont importés de manière sécurisée dans main_installer.py
 
 
 # Aliases pour compatibilité avec l'ancien code
@@ -56,7 +56,6 @@ def get_available_methods() -> list:
 __all__ = [
     # Classes principales
     'MainInstaller',
-    'WingetInstaller',
     
     # Hooks communs
     'InstallationStatus',

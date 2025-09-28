@@ -8,6 +8,7 @@ import time
 
 from .hook.status import InstallationResult, InstallationStatus, InstallationMethod
 from .hook.progress import ProgressTracker, ProgressInfo
+from . import simulation
 
 # Imports sécurisés des installateurs
 try:
@@ -44,9 +45,10 @@ except ImportError as e:
 class MainInstaller:
     """Orchestrateur principal pour les installations de packages."""
     
-    def __init__(self):
+    def __init__(self, simulation_mode: bool = False):
         self.progress_tracker = ProgressTracker()
         self.installers = {}
+        self.simulation_mode = simulation_mode
 
         # Initialiser les installateurs de manière sécurisée
         installer_classes = {
@@ -82,11 +84,15 @@ class MainInstaller:
         }
 
         # Vérifier qu'on a au moins un installateur
-        if not self.installers:
+        if not self.installers and not self.simulation_mode:
             print("WARNING: Aucun installateur disponible !")
         else:
-            available_methods = list(self.installers.keys())
-            print(f"INFO Installateurs disponibles: {[m.value for m in available_methods]}")
+            if self.simulation_mode:
+                simulation.enable_simulation_mode()
+                print("INFO Mode simulation activé - toutes les méthodes disponibles")
+            else:
+                available_methods = list(self.installers.keys())
+                print(f"INFO Installateurs disponibles: {[m.value for m in available_methods]}")
     
     def set_progress_callback(self, callback: Callable[[ProgressInfo], None]) -> None:
         """Définit le callback de progression pour tous les installateurs."""
@@ -100,10 +106,24 @@ class MainInstaller:
         """Annule toutes les installations en cours."""
         self.is_cancelled = True
         self.progress_tracker.cancel()
-        
+
         # Propager l'annulation à tous les installateurs
         for installer in self.installers.values():
             installer.cancel_installation()
+
+    def enable_simulation_mode(self) -> None:
+        """Active le mode simulation."""
+        self.simulation_mode = True
+        simulation.enable_simulation_mode()
+
+    def disable_simulation_mode(self) -> None:
+        """Désactive le mode simulation."""
+        self.simulation_mode = False
+        simulation.disable_simulation_mode()
+
+    def is_simulation_enabled(self) -> bool:
+        """Vérifie si le mode simulation est activé."""
+        return self.simulation_mode
     
     def install_packages(self, packages: List[str], 
                         preferred_method: InstallationMethod = InstallationMethod.WINGET,
@@ -212,6 +232,22 @@ class MainInstaller:
             if not installer:
                 continue
             
+            # MODE SIMULATION
+            if self.simulation_mode:
+                try:
+                    # Utiliser la simulation au lieu de l'installateur réel
+                    result = simulation.simulate_installation_by_method(method, package_name, **kwargs)
+                    return result
+                except Exception as e:
+                    last_result = InstallationResult(
+                        status=InstallationStatus.FAILED,
+                        message=f"Erreur pendant la simulation {method.value}: {e}",
+                        package_name=package_name,
+                        method=method
+                    )
+                    continue
+
+            # MODE RÉEL
             # Vérifier que l'installateur est disponible (avec protection)
             try:
                 availability = installer.check_availability()
@@ -277,15 +313,21 @@ class MainInstaller:
     def check_system_compatibility(self) -> Dict[InstallationMethod, InstallationResult]:
         """
         Vérifie la compatibilité du système avec les différentes méthodes.
-        
+
         Returns:
             Dict: Résultats de compatibilité par méthode
         """
         results = {}
-        
-        for method, installer in self.installers.items():
-            results[method] = installer.check_availability()
-        
+
+        if self.simulation_mode:
+            # En mode simulation, toutes les méthodes sont disponibles
+            for method in InstallationMethod:
+                results[method] = simulation.simulate_availability_check(method)
+        else:
+            # Mode réel
+            for method, installer in self.installers.items():
+                results[method] = installer.check_availability()
+
         return results
     
     def get_installation_stats(self) -> Dict[str, Any]:

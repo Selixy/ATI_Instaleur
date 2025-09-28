@@ -1,35 +1,293 @@
 applications:
-  - name: "Blender"
-    description: "Suite de création 3D libre et gratuite"
-    category: "3D/Animation"
-    icon: ""
-    enabled: true
-    methods:
-      - type: "winget"
-        package: "BlenderFoundation.Blender"
-        priority: 1
-      - type: "chocolatey"
-        package: "blender"
-        priority: 2
-      - type: "direct_download"
-        url: "https://www.blender.org/download/"
-        priority: 3
+  # ======================
+  # DÉVELOPPEMENT
+  # ======================
 
   - name: "Visual Studio Code"
     description: "Éditeur de code source léger et puissant"
     category: "Développement"
     icon: ""
     enabled: true
+    has_versions: true
+    default_version_index: 0
+    versions:
+      - name: "Stable (Recommandé)"
+        version: "stable"
+        methods:
+          - type: "exe"
+            url: "https://code.visualstudio.com/sha/download?build=stable&os=win32-x64"
+            silent_args: "/verysilent /norestart /mergetasks=!runcode"
+            priority: 1
+      - name: "Insiders (Beta)"
+        version: "insiders"
+        methods:
+          - type: "exe"
+            url: "https://code.visualstudio.com/sha/download?build=insiders&os=win32-x64"
+            silent_args: "/verysilent /norestart /mergetasks=!runcode"
+            priority: 1
+
+  - name: "Git"
+    description: "Système de contrôle de version décentralisé"
+    category: "Développement"
+    icon: ""
+    enabled: true
     methods:
-      - type: "winget"
-        package: "Microsoft.VisualStudioCode"
+      - type: "exe"
+        url: "https://github.com/git-for-windows/git/releases/latest/download/Git-2.47.1-64-bit.exe"
+        silent_args: "/VERYSILENT /NORESTART /NOCANCEL /SP- /CLOSEAPPLICATIONS /RESTARTAPPLICATIONS /COMPONENTS=ext,ext\\shellhere,ext\\guihere,gitlfs,assoc,assoc_sh"
         priority: 1
-      - type: "chocolatey"
-        package: "vscode"
-        priority: 2
-      - type: "direct_download"
-        url: "https://code.visualstudio.com/download"
-        priority: 3
+
+
+  - name: "Visual Studio"
+    description: "Environnement de développement intégré (IDE) pour Windows"
+    category: "Développement"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "exe"
+        url: "https://aka.ms/vs/17/release/vs_Community.exe"
+        silent_args: "--nocache --wait --noUpdateInstaller --noWeb --allWorkloads --includeRecommended --includeOptional --quiet --norestart"
+        priority: 1
+
+  - name: "TortoiseGit"
+    description: "Client Git pour Windows avec interface graphique"
+    category: "Développement"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "msi"
+        url: "https://download.tortoisegit.org/tgit/2.17.0.0/TortoiseGit-2.17.0.2-64bit.msi"
+        silent_args: "REBOOT=ReallySuppress /quiet /norestart"
+        priority: 1
+        note: "MSI avec installation silencieuse"
+
+  # ======================
+  # 3D/ANIMATION
+  # ======================
+
+  - name: "Blender"
+    description: "Suite de création 3D libre et gratuite"
+    category: "3D/Animation"
+    icon: ""
+    enabled: true
+    has_versions: true
+    default_version_index: 0
+    versions:
+      - name: "3.6 (Recommandé)"
+        version: "3.6.17"
+        methods:
+          - type: "msi"
+            url: "https://download.blender.org/release/Blender3.6/blender-3.6.17-windows-x64.msi"
+            silent_args: "/quiet /norestart"
+            priority: 1
+      - name: "4.3 LTS"
+        version: "4.3.2"
+        methods:
+          - type: "msi"
+            url: "https://download.blender.org/release/Blender4.3/blender-4.3.2-windows-x64.msi"
+            silent_args: "/quiet /norestart"
+            priority: 1
+      - name: "4.2 LTS"
+        version: "4.2.3"
+        methods:
+          - type: "msi"
+            url: "https://download.blender.org/release/Blender4.2/blender-4.2.3-windows-x64.msi"
+            silent_args: "/quiet /norestart"
+            priority: 1
+
+  - name: "Unity Hub"
+    description: "Gestionnaire pour le moteur de jeu Unity"
+    category: "3D/Animation"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "exe"
+        url: "https://public-cdn.cloud.unity3d.com/hub/prod/UnityHubSetup.exe"
+        silent_args: "/S"
+        priority: 1
+
+  # LOGICIELS avec luncher (nécessitent login/compte manuel):
+
+  - name: "Unreal Engine 5"
+    description: "Moteur de jeu et de création 3D (version 5.3.4)"
+    category: "3D/Animation"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "msi"
+        url: "https://www.epicgames.com/store/en-US/download"
+        silent_args: "/quiet /norestart"
+        priority: 1
+        note: "Installe Epic Games Launcher qui gère ensuite l'installation d'Unreal Engine"
+
+  - name: "Autodesk Maya"
+    description: "Logiciel de modélisation et d'animation 3D"
+    category: "3D/Animation"
+    icon: ""
+    enabled: true
+    has_versions: true
+    default_version_index: 1
+    versions:
+      - name: "2025"
+        version: "2025"
+        methods:
+          - type: "exe"
+            url: "https://efulfillment.autodesk.com/NetSWDLD/2025/MAYA/FD0B8EC0-CA1C-3F6E-A3FC-69A7A1BD4C4E/SFX/Autodesk_Maya_2025_ML_Windows_64bit_dlm.sfx.exe"
+            silent_args: "--mode unattended --accept_eula"
+            priority: 1
+      - name: "2024 (Recommandé)"
+        version: "2024.3"
+        methods:
+          - type: "exe"
+            url: "https://efulfillment.autodesk.com/NetSWDLD/2024/MAYA/42762096-E3FE-3521-9687-693E0B913A4F/SFX/Autodesk_Maya_2024_1_Update_Windows_64bit_dlm_001_002.sfx.exe"
+            silent_args: "--mode unattended --accept_eula"
+            priority: 1
+      - name: "2023 LTS"
+        version: "2023.3"
+        methods:
+          - type: "exe"
+            url: "https://efulfillment.autodesk.com/NetSWDLD/2023/MAYA/756B4F18-3772-391C-81C9-69A4F8F12177/SFX/Autodesk_Maya_2023_ML_Windows_64bit_dlm.sfx.exe"
+            silent_args: "--mode unattended --accept_eula"
+            priority: 1
+      - name: "2022 LTS"
+        version: "2022.5"
+        methods:
+          - type: "exe"
+            url: "https://efulfillment.autodesk.com/NetSWDLD/2022/MAYA/756B4F18-3772-391C-81C9-69A4F8F12177/SFX/Autodesk_Maya_2022_ML_Windows_64bit_dlm.sfx.exe"
+            silent_args: "--mode unattended --accept_eula"
+            priority: 1
+
+  - name: "Autodesk MotionBuilder"
+    description: "Logiciel d'animation 3D en temps réel"
+    category: "3D/Animation"
+    icon: ""
+    enabled: true
+    has_versions: true
+    default_version_index: 3
+    versions:
+      - name: "2025"
+        version: "2025"
+        methods:
+          - type: "exe"
+            url: "https://efulfillment.autodesk.com/NetSWDLD/2025/MOBPRO/8E8A1C2E-0952-3C68-842C-69A9FEB04127/SFX/Autodesk_MotionBuilder_2025_ML_Windows_64bit_dlm.sfx.exe"
+            silent_args: "--mode unattended --accept_eula"
+            priority: 1
+      - name: "2024"
+        version: "2024"
+        methods:
+          - type: "exe"
+            url: "https://efulfillment.autodesk.com/NetSWDLD/2024/MOBPRO/8E8A1C2E-0952-3C68-842C-69A9FEB04127/SFX/Autodesk_MotionBuilder_2024_ML_Windows_64bit_dlm.sfx.exe"
+            silent_args: "--mode unattended --accept_eula"
+            priority: 1
+      - name: "2023"
+        version: "2023"
+        methods:
+          - type: "exe"
+            url: "https://efulfillment.autodesk.com/NetSWDLD/2023/MOBPRO/8E8A1C2E-0952-3C68-842C-69A9FEB04127/SFX/Autodesk_MotionBuilder_2023_ML_Windows_64bit_dlm.sfx.exe"
+            silent_args: "--mode unattended --accept_eula"
+            priority: 1
+      - name: "2022 (Recommandé)"
+        version: "2022"
+        methods:
+          - type: "exe"
+            url: "https://dds.autodesk.com/NetSWDLD/2022/MOBPRO/330EFCEA-0952-3C68-842C-69A9FEB04127/SFX/Autodesk_MB_2022_ML_Windows_64bit_dlm.sfx.exe"
+            silent_args: "--mode unattended --accept_eula"
+            priority: 1
+
+  - name: "Houdini"
+    description: "Logiciel de création procédurale 3D (version 20.5 pour nous)"
+    category: "3D/Animation"
+    icon: ""
+    enabled: true
+    methods:
+      # Houdini Launcher - gère automatiquement l'installation de Houdini
+      - type: "exe"
+        url: "https://www.sidefx.com/download/"
+        silent_args: "/S"
+        priority: 1
+        note: "Installe le launcher Houdini qui gère ensuite l'installation de Houdini"
+
+  - name: "The Foundry NukeX"
+    description: "Logiciel de composition et d'effets visuels"
+    category: "3D/Animation"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "exe"
+        url: "https://www.foundry.com/products/nuke/download"
+        silent_args: "/S /ACCEPT-FOUNDRY-EULA"
+        priority: 1
+        note: "Installeur exe avec installation silencieuse"
+
+  - name: "The Foundry NukeStudio"
+    description: "Logiciel de composition et de montage pour les effets visuels"
+    category: "3D/Animation"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "exe"
+        url: "https://www.foundry.com/products/nuke/download"
+        silent_args: "/S /ACCEPT-FOUNDRY-EULA"
+        priority: 1
+        note: "Inclus avec Nuke - installeur exe silencieux"
+
+  - name: "The Foundry Mari"
+    description: "Logiciel de texturing 3D"
+    category: "3D/Animation"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "exe"
+        url: "https://www.foundry.com/products/mari/download"
+        silent_args: "/S"
+        priority: 1
+        note: "Installeur exe avec installation silencieuse"
+
+  # ======================
+  # ADOBE CREATIVE CLOUD
+  # ======================
+
+  - name: "Adobe Creative Cloud"
+    description: "Gestionnaire pour tous les produits Adobe Creative Suite"
+    category: "Graphisme"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "exe"
+        url: "https://creativecloud.adobe.com/apps/download/creative-cloud"
+        silent_args: "--silent"
+        priority: 1
+    note: "Requis pour installer Photoshop, After Effects, Substance, etc."
+
+  # Note: Les applications Adobe individuelles sont installées via Creative Cloud Desktop
+  # Vous pouvez les conserver pour référence mais elles nécessitent Creative Cloud
+
+  # ======================
+  # UTILITAIRES
+  # ======================
+
+  - name: "FileZilla"
+    description: "Client FTP, FTPS et SFTP"
+    category: "Utilitaires"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "exe"
+        url: "https://download.filezilla-project.org/client/FileZilla_3.68.1_win64-setup.exe"
+        silent_args: "/S"
+        priority: 1
+
+  - name: "PowerToys"
+    description: "Utilitaires système pour améliorer la productivité sous Windows"
+    category: "Utilitaires"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "exe"
+        url: "https://github.com/microsoft/PowerToys/releases/download/v0.94.2/PowerToysSetup-0.94.2-x64.exe"
+        silent_args: "--silent"
+        priority: 1
+        note: "GitHub releases - installation silencieuse"
 
   - name: "SyncTrazor"
     description: "Outil de synchronisation et de sauvegarde de fichiers"
@@ -38,35 +296,10 @@ applications:
     enabled: true
     methods:
       - type: "exe"
+        url: "https://github.com/canton7/SyncTrayzor/releases/latest"
+        silent_args: "/silent"
         priority: 1
-      - type: "direct_download"
-        url: "https://www.synctrazor.com/download"
-        priority: 2
-
-  - name: "PowerToys"
-    description: "Utilitaires système pour améliorer la productivité sous Windows"
-    category: "Utilitaires"
-    icon: ""
-    enabled: true
-    methods:
-      - type: "winget"
-        package: "Microsoft.PowerToys"
-        priority: 1
-      - type: "chocolatey"
-        package: "powertoys"
-        priority: 2
-
-  - name: "PureRef"
-    description: "Outil de référence visuelle pour les artistes"
-    category: "Graphisme"
-    icon: ""
-    enabled: true
-    methods:
-      - type: "msi"
-        priority: 1
-      - type: "direct_download"
-        url: "https://www.pureref.com/download"
-        priority: 2
+        note: "Inno Setup - installation silencieuse"
 
   - name: "DJV"
     description: "Visionneuse d'images et de vidéos pour les professionnels de la 3D"
@@ -74,9 +307,15 @@ applications:
     icon: ""
     enabled: true
     methods:
-      - type: "direct_download"
-        url: "https://djv.sourceforge.net/download"
+      - type: "exe"
+        url: "https://sourceforge.net/projects/djv/files/djv-beta/2.0.8/DJV-2.0.8-win64.exe/download"
+        silent_args: "/S"
         priority: 1
+        note: "NSIS - installation silencieuse"
+
+  # ======================
+  # COMMUNICATION
+  # ======================
 
   - name: "Discord"
     description: "Plateforme de communication vocale et textuelle"
@@ -84,195 +323,23 @@ applications:
     icon: ""
     enabled: true
     methods:
-      - type: "winget"
-        package: "Discord.Discord"
-        priority: 1
-      - type: "chocolatey"
-        package: "discord"
-        priority: 2
-
-  - name: "Git"
-    description: "Système de contrôle de version décentralisé"
-    category: "Développement"
-    icon: ""
-    enabled: true
-    methods:
-      - type: "winget"
-        package: "Git.Git"
-        priority: 1
-      - type: "chocolatey"
-        package: "git"
-        priority: 2
-
-  - name: "TortoiseGit"
-    description: "Client Git pour Windows avec interface graphique"
-    category: "Développement"
-    icon: ""
-    enabled: true
-    methods:
-      - type: "chocolatey"
-        package: "tortoisegit"
-        priority: 1
-      - type: "direct_download"
-        url: "https://tortoisegit.org/download/"
-        priority: 2
-
-  - name: "Visual Studio"
-    description: "Environnement de développement intégré (IDE) pour Windows"
-    category: "Développement"
-    icon: ""
-    enabled: true
-    methods:
-      - type: "winget"
-        package: "Microsoft.VisualStudio.2022.Community"
-        priority: 1
-      - type: "chocolatey"
-        package: "visualstudio2022community"
-        priority: 2
-
-  - name: "Autodesk Maya"
-    description: "Logiciel de modélisation et d'animation 3D (version 2024)"
-    category: "3D/Animation"
-    icon: ""
-    enabled: true
-    methods:
-      - type: "direct_download"
-        url: "https://www.autodesk.com/products/maya/free-trial"
+      - type: "exe"
+        url: "https://discord.com/api/downloads/distributions/app/installers/latest?channel=stable&platform=win&arch=x64"
+        silent_args: "/S"
         priority: 1
 
-  - name: "Autodesk MotionBuilder"
-    description: "Logiciel d'animation 3D en temps réel (version 2022)"
-    category: "3D/Animation"
-    icon: ""
-    enabled: true
-    methods:
-      - type: "direct_download"
-        url: "https://www.autodesk.com/products/motionbuilder/free-trial"
-        priority: 1
+  # ======================
+  # GRAPHISME
+  # ======================
 
-  - name: "Houdini"
-    description: "Logiciel de création procédurale 3D (version 20.5)"
-    category: "3D/Animation"
-    icon: ""
-    enabled: true
-    methods:
-      - type: "direct_download"
-        url: "https://www.sidefx.com/download/"
-        priority: 1
-
-  - name: "Unreal Engine 5"
-    description: "Moteur de jeu et de création 3D (version 5.3.4)"
-    category: "3D/Animation"
-    icon: ""
-    enabled: true
-    methods:
-      - type: "direct_download"
-        url: "https://www.unrealengine.com/en-US/download"
-        priority: 1
-
-  - name: "Unity"
-    description: "Moteur de jeu et de création 3D"
-    category: "3D/Animation"
+  - name: "PureRef"
+    description: "Outil de référence visuelle pour les artistes"
+    category: "Graphisme"
     icon: ""
     enabled: true
     methods:
       - type: "exe"
+        url: "https://www.pureref.com/download.php"
+        silent_args: "/S"
         priority: 1
-      - type: "msi"
-        priority: 2
-      - type: "direct_download"
-        url: "https://unity.com/download"
-        priority: 3
-
-  - name: "The Foundry NukeX"
-    description: "Logiciel de composition et d'effets visuels"
-    category: "3D/Animation"
-    icon: ""
-    enabled: true
-    methods:
-      - type: "direct_download"
-        url: "https://www.foundry.com/products/nuke"
-        priority: 1
-
-  - name: "The Foundry NukeStudio"
-    description: "Logiciel de composition et de montage pour les effets visuels"
-    category: "3D/Animation"
-    icon: ""
-    enabled: true
-    methods:
-      - type: "direct_download"
-        url: "https://www.foundry.com/products/nuke-studio"
-        priority: 1
-
-  - name: "The Foundry Mari"
-    description: "Logiciel de texturing 3D"
-    category: "3D/Animation"
-    icon: ""
-    enabled: true
-    methods:
-      - type: "direct_download"
-        url: "https://www.foundry.com/products/mari"
-        priority: 1
-
-  - name: "Adobe Photoshop"
-    description: "Logiciel de retouche et de création graphique"
-    category: "Graphisme"
-    icon: ""
-    enabled: true
-    methods:
-      - type: "direct_download"
-        url: "https://www.adobe.com/fr/products/photoshop.html"
-        priority: 1
-
-  - name: "Adobe Substance Painter"
-    description: "Logiciel de texturing 3D"
-    category: "Graphisme"
-    icon: ""
-    enabled: true
-    methods:
-      - type: "direct_download"
-        url: "https://www.adobe.com/fr/products/substance3d-painter.html"
-        priority: 1
-
-  - name: "Adobe Substance Designer"
-    description: "Logiciel de création de matériaux procéduraux"
-    category: "Graphisme"
-    icon: ""
-    enabled: true
-    methods:
-      - type: "direct_download"
-        url: "https://www.adobe.com/fr/products/substance3d-designer.html"
-        priority: 1
-
-  - name: "Adobe Media Encoder"
-    description: "Outil d'encodage vidéo et audio"
-    category: "Multimédia"
-    icon: ""
-    enabled: true
-    methods:
-      - type: "direct_download"
-        url: "https://www.adobe.com/fr/products/media-encoder.html"
-        priority: 1
-
-  - name: "Adobe After Effects"
-    description: "Logiciel de motion design et d'effets visuels"
-    category: "Multimédia"
-    icon: ""
-    enabled: true
-    methods:
-      - type: "direct_download"
-        url: "https://www.adobe.com/fr/products/aftereffects.html"
-        priority: 1
-
-  - name: "FileZilla"
-    description: "Client FTP, FTPS et SFTP"
-    category: "Utilitaires"
-    icon: ""
-    enabled: true
-    methods:
-      - type: "winget"
-        package: "FileZilla.Client"
-        priority: 1
-      - type: "chocolatey"
-        package: "filezilla"
-        priority: 2
+        note: "Installeur NSIS avec installation silencieuse - /S sensible à la casse"

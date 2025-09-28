@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(./.venv/Scripts/python.exe:*)",
+      "Bash(python test:*)",
+      "Bash(.venvScriptspython.exe:*)",
+      "Bash(.venv/Scripts/python.exe:*)",
+      "Bash(python test_maya_mobu_versions.py:*)",
+      "Bash(python test_default_version_index.py:*)",
+      "Bash(python test_factorized_config.py)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

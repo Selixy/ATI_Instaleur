@@ -25,6 +25,18 @@ class InstallationMethod:
 
 
 @dataclass
+class ApplicationVersion:
+    """Représente une version spécifique d'une application."""
+    name: str
+    version: str
+    methods: List[InstallationMethod] = None
+
+    def __post_init__(self):
+        if self.methods is None:
+            self.methods = []
+
+
+@dataclass
 class Application:
     """Représente une application à installer."""
     name: str
@@ -34,12 +46,17 @@ class Application:
     methods: List[InstallationMethod] = None
     requirements: List[str] = None
     enabled: bool = True
-    
+    has_versions: bool = False
+    versions: List[ApplicationVersion] = None
+    default_version_index: int = 0
+
     def __post_init__(self):
         if self.methods is None:
             self.methods = []
         if self.requirements is None:
             self.requirements = []
+        if self.versions is None:
+            self.versions = []
     
     def get_preferred_method(self) -> Optional[InstallationMethod]:
         """Retourne la méthode d'installation préférée (priorité la plus basse)."""
@@ -50,6 +67,18 @@ class Application:
     def get_methods_by_type(self, method_type: str) -> List[InstallationMethod]:
         """Retourne toutes les méthodes d'un type donné."""
         return [method for method in self.methods if method.type == method_type]
+
+    def get_default_version(self) -> Optional[ApplicationVersion]:
+        """Retourne la version par défaut basée sur default_version_index."""
+        if not self.has_versions or not self.versions:
+            return None
+
+        # Vérifier que l'index est valide
+        if 0 <= self.default_version_index < len(self.versions):
+            return self.versions[self.default_version_index]
+
+        # Si l'index n'est pas valide, retourner la première version
+        return self.versions[0] if self.versions else None
 
 
 class ConfigurationLoader:
@@ -128,20 +157,45 @@ class ConfigurationLoader:
     def _parse_applications(self, apps_data: List[Dict]) -> None:
         """Parse les applications depuis la configuration."""
         self.applications = []
-        
+
         for app_data in apps_data:
             try:
+                has_versions = app_data.get('has_versions', False)
                 methods = []
-                for method_data in app_data.get('methods', []):
-                    method = InstallationMethod(
-                        type=method_data.get('type', ''),
-                        package=method_data.get('package', ''),
-                        url=method_data.get('url', ''),
-                        priority=method_data.get('priority', 1),
-                        extra_args=method_data.get('extra_args', {})
-                    )
-                    methods.append(method)
-                
+                versions = []
+
+                if has_versions:
+                    # Parse les versions
+                    for version_data in app_data.get('versions', []):
+                        version_methods = []
+                        for method_data in version_data.get('methods', []):
+                            method = InstallationMethod(
+                                type=method_data.get('type', ''),
+                                package=method_data.get('package', ''),
+                                url=method_data.get('url', ''),
+                                priority=method_data.get('priority', 1),
+                                extra_args=method_data.get('extra_args', {})
+                            )
+                            version_methods.append(method)
+
+                        app_version = ApplicationVersion(
+                            name=version_data.get('name', ''),
+                            version=version_data.get('version', ''),
+                            methods=version_methods
+                        )
+                        versions.append(app_version)
+                else:
+                    # Parse les méthodes classiques
+                    for method_data in app_data.get('methods', []):
+                        method = InstallationMethod(
+                            type=method_data.get('type', ''),
+                            package=method_data.get('package', ''),
+                            url=method_data.get('url', ''),
+                            priority=method_data.get('priority', 1),
+                            extra_args=method_data.get('extra_args', {})
+                        )
+                        methods.append(method)
+
                 app = Application(
                     name=app_data['name'],
                     description=app_data.get('description', ''),
@@ -149,13 +203,16 @@ class ConfigurationLoader:
                     icon=app_data.get('icon', ''),
                     methods=methods,
                     requirements=app_data.get('requirements', []),
-                    enabled=app_data.get('enabled', True)
+                    enabled=app_data.get('enabled', True),
+                    has_versions=has_versions,
+                    versions=versions,
+                    default_version_index=app_data.get('default_version_index', 0)
                 )
-                
+
                 # Ne charger que les applications activées
                 if app.enabled:
                     self.applications.append(app)
-                    
+
             except KeyError as e:
                 print(f"[WARNING] Application ignorée, champ requis manquant: {e}")
             except Exception as e:
