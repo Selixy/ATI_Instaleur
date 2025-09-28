@@ -99,6 +99,16 @@ class ApplicationCard(QFrame):
     def on_toggled(self, state):
         """Gestionnaire du changement d'état de la checkbox."""
         is_checked = state == Qt.Checked
+
+        # Si l'application est installée et qu'on essaie de la cocher, l'empêcher
+        if self.is_installed and is_checked:
+            # Bloquer le signal et décocher immédiatement
+            self.checkbox.blockSignals(True)
+            self.checkbox.setChecked(False)
+            self.checkbox.blockSignals(False)
+            print(f"Application {self.application.name} déjà installée - sélection ignorée")
+            return
+
         self.toggled.emit(self.application.name, is_checked)
     
     def is_selected(self):
@@ -131,6 +141,11 @@ class ApplicationCard(QFrame):
 
     def set_selected(self, selected):
         """Définit l'état de sélection de l'application."""
+        # Empêcher la sélection si l'application est installée
+        if self.is_installed and selected:
+            print(f"Application {self.application.name} déjà installée - sélection refusée")
+            return
+
         # Bloquer temporairement les signaux pour éviter la récursion infinie
         self.checkbox.blockSignals(True)
         self.checkbox.setChecked(selected)
@@ -153,6 +168,13 @@ class ApplicationCard(QFrame):
         if self.is_installed != is_installed:
             self.is_installed = is_installed
             self.update_installed_state()
+
+            # Si l'application devient installée, la désélectionner automatiquement
+            if self.is_installed and self.checkbox.isChecked():
+                self.checkbox.blockSignals(True)
+                self.checkbox.setChecked(False)
+                self.checkbox.blockSignals(False)
+                print(f"Application {self.application.name} détectée comme installée - désélectionnée automatiquement")
 
             # Mettre à jour le texte de la catégorie
             category_text = f"Catégorie: {self.application.category}"

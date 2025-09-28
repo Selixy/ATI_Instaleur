@@ -93,7 +93,18 @@ class SelectionPage(QWidget):
         else:
             apps_to_check = all_applications
 
-        self.installation_statuses = self.status_checker.check_multiple_applications(apps_to_check)
+        # Vérifier les statuts avec les versions par défaut
+        self.installation_statuses = {}
+        for app in apps_to_check:
+            # Si l'app a des versions, utiliser la version par défaut
+            if app.has_versions and app.versions:
+                default_version = app.versions[app.default_version_index] if app.default_version_index < len(app.versions) else app.versions[0]
+                is_installed = self.status_checker.check_application_status(app, default_version)
+            else:
+                # Sinon utiliser l'ancienne méthode
+                is_installed = self.status_checker.check_application_status(app)
+
+            self.installation_statuses[app.name] = is_installed
 
         # Pour les apps non vérifiées, on assume qu'elles ne sont pas installées
         for app in all_applications:
@@ -113,6 +124,9 @@ class SelectionPage(QWidget):
                 # Connecter les signaux pour mettre à jour le bouton d'installation
                 for card in section.app_cards:
                     card.toggled.connect(self.update_install_button)
+                    # Connecter le signal de changement de version
+                    if hasattr(card, 'version_changed'):
+                        card.version_changed.connect(self.on_version_changed)
 
                 # Connecter le signal de changement de sélection de la section
                 section.app_selection_changed.connect(self.update_install_button)
@@ -217,9 +231,19 @@ class SelectionPage(QWidget):
         # Vider le cache du status checker
         self.status_checker.clear_cache()
 
-        # Re-vérifier tous les statuts
+        # Re-vérifier tous les statuts avec versions
         all_applications = self.config_loader.get_all_applications()
-        self.installation_statuses = self.status_checker.check_multiple_applications(all_applications)
+        self.installation_statuses = {}
+        for app in all_applications:
+            # Si l'app a des versions, utiliser la version par défaut
+            if app.has_versions and app.versions:
+                default_version = app.versions[app.default_version_index] if app.default_version_index < len(app.versions) else app.versions[0]
+                is_installed = self.status_checker.check_application_status(app, default_version)
+            else:
+                # Sinon utiliser l'ancienne méthode
+                is_installed = self.status_checker.check_application_status(app)
+
+            self.installation_statuses[app.name] = is_installed
 
         # Mettre à jour l'affichage de toutes les cartes
         for section in self.category_sections:
@@ -235,3 +259,56 @@ class SelectionPage(QWidget):
         installed_count = sum(1 for status in self.installation_statuses.values() if status)
         total_count = len(self.installation_statuses)
         print(f"Statuts mis à jour: {installed_count}/{total_count} applications installées")
+
+    def on_version_changed(self, app_name: str, version: str):
+        """Gestionnaire appelé quand une version d'application change."""
+        print(f"Changement de version détecté: {app_name} -> {version}")
+
+        # Re-vérifier le statut d'installation pour cette version spécifique
+        try:
+            # Trouver l'application
+            app_found = None
+            for section in self.category_sections:
+                for card in section.app_cards:
+                    if card.application.name == app_name:
+                        app_found = card.application
+                        break
+                if app_found:
+                    break
+
+            if app_found:
+                # Vérifier le statut avec la nouvelle version
+                selected_version = None
+                for card in [c for s in self.category_sections for c in s.app_cards]:
+                    if card.application.name == app_name:
+                        selected_version = card.get_selected_version()
+                        break
+
+                if selected_version:
+                    # Créer une clé de cache unique pour cette version
+                    cache_key = f"{app_name}:{version}"
+
+                    # Vider le cache pour cette app/version
+                    if cache_key in getattr(self.status_checker, '_cache', {}):
+                        del self.status_checker._cache[cache_key]
+
+                    # Re-vérifier avec la nouvelle version
+                    is_installed = self.status_checker.check_application_status(app_found, selected_version)
+
+                    # Mettre à jour le statut dans notre cache local
+                    self.installation_statuses[app_name] = is_installed
+
+                    # Mettre à jour l'affichage de la carte
+                    for section in self.category_sections:
+                        for card in section.app_cards:
+                            if card.application.name == app_name:
+                                card.set_installed_state(is_installed)
+                                break
+
+                    print(f"Statut mis à jour pour {app_name} v{version}: {'installé' if is_installed else 'non installé'}")
+
+        except Exception as e:
+            print(f"Erreur lors de la vérification de version pour {app_name}: {e}")
+
+        # Mettre à jour le bouton d'installation
+        self.update_install_button()

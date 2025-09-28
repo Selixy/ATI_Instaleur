@@ -27,9 +27,6 @@ class InstallationStatus(Enum):
 
 class InstallationMethod(Enum):
     """Méthodes d'installation disponibles."""
-    WINGET = "winget"
-    CHOCOLATEY = "chocolatey"
-    DIRECT_DOWNLOAD = "direct_download"
     MSI = "msi"
     EXE = "exe"
 

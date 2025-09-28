@@ -12,7 +12,12 @@
       "Bash(python:*)",
       "Bash(del config_loader.py)",
       "Bash(dir)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(del:*)",
+      "WebFetch(domain:stackoverflow.com)",
+      "Bash(\".venv\\Scripts\\python.exe\" test_no_selection_installed.py)",
+      "Bash(findstr:*)",
+      "Bash(\".venv\\Scripts\\python.exe\" test_sans_winget_chocolatey.py)"
     ],
     "deny": [],
     "ask": []

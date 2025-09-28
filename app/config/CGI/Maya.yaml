@@ -5,8 +5,15 @@ applications:
     icon: ""
     enabled: true
     has_versions: true
-    default_version_index: 1
+    default_version_index: 2
     versions:
+      - name: "2026"
+        version: "2026"
+        methods:
+          - type: "exe"
+            url: "https://efulfillment.autodesk.com/NetSWDLD/2026/MAYA/FD0B8EC0-CA1C-3F6E-A3FC-69A7A1BD4C4E/SFX/Autodesk_Maya_2026_ML_Windows_64bit_dlm.sfx.exe"
+            silent_args: "--mode unattended --accept_eula"
+            priority: 1
       - name: "2025"
         version: "2025"
         methods:

@@ -88,122 +88,6 @@ def simulate_msi_installation(package_name: str, url: str = "", silent_args: str
     )
 
 
-def simulate_winget_installation(package_name: str, package: str = "", **kwargs) -> InstallationResult:
-    """
-    Simule l'installation d'un package Winget.
-
-    Args:
-        package_name: Nom du package
-        package: ID du package winget
-        **kwargs: Arguments supplémentaires
-
-    Returns:
-        InstallationResult: Résultat simulé
-    """
-    print(f"SIMULATION WINGET: {package_name}")
-
-    package_id = package or package_name
-    print(f"Recherche du package: {package_id}")
-    time.sleep(0.2)
-    print(f"Package trouve: {package_id}")
-    print(f"Execution: winget install {package_id}")
-
-    # Simulation progression
-    for progress in range(0, 101, 33):
-        time.sleep(0.15)
-        print(f"Installation: {progress}%")
-
-    print(f"Installation simulee de {package_name} terminee!")
-
-    return InstallationResult(
-        status=InstallationStatus.SUCCESS,
-        message=f"Installation simulée Winget de {package_name} réussie",
-        package_name=package_name,
-        method=InstallationMethod.WINGET
-    )
-
-
-def simulate_chocolatey_installation(package_name: str, package: str = "", **kwargs) -> InstallationResult:
-    """
-    Simule l'installation d'un package Chocolatey.
-
-    Args:
-        package_name: Nom du package
-        package: ID du package chocolatey
-        **kwargs: Arguments supplémentaires
-
-    Returns:
-        InstallationResult: Résultat simulé
-    """
-    print(f"SIMULATION CHOCOLATEY: {package_name}")
-
-    package_id = package or package_name
-    print(f"Recherche sur chocolatey.org: {package_id}")
-    time.sleep(0.2)
-    print(f"Package trouve dans le repository")
-    print(f"Execution: choco install {package_id} -y")
-
-    # Simulation téléchargement dépendances
-    deps = random.randint(0, 3)
-    if deps > 0:
-        print(f"Telechargement de {deps} dependance(s)...")
-        time.sleep(0.3)
-
-    # Simulation progression
-    for progress in range(0, 101, 25):
-        time.sleep(0.1)
-        print(f"Installation: {progress}%")
-
-    print(f"Installation simulee de {package_name} terminee!")
-
-    return InstallationResult(
-        status=InstallationStatus.SUCCESS,
-        message=f"Installation simulée Chocolatey de {package_name} réussie",
-        package_name=package_name,
-        method=InstallationMethod.CHOCOLATEY
-    )
-
-
-def simulate_direct_download_installation(package_name: str, url: str = "", **kwargs) -> InstallationResult:
-    """
-    Simule l'installation par téléchargement direct.
-
-    Args:
-        package_name: Nom du package
-        url: URL de téléchargement
-        **kwargs: Arguments supplémentaires
-
-    Returns:
-        InstallationResult: Résultat simulé
-    """
-    print(f"SIMULATION DIRECT DOWNLOAD: {package_name}")
-
-    print(f"Acces au site: {url[:50]}...")
-    time.sleep(0.3)
-    print(f"Detection de l'installeur...")
-    time.sleep(0.2)
-
-    # Simulation téléchargement
-    file_size = random.randint(100, 1000)  # MB
-    print(f"Telechargement: {file_size} MB")
-
-    # Simulation progression téléchargement
-    for progress in range(0, 101, 20):
-        time.sleep(0.1)
-        print(f"Telechargement: {progress}%")
-
-    print(f"Lancement de l'installation...")
-    time.sleep(0.4)
-    print(f"Installation simulee de {package_name} terminee!")
-
-    return InstallationResult(
-        status=InstallationStatus.SUCCESS,
-        message=f"Installation simulée par téléchargement direct de {package_name} réussie",
-        package_name=package_name,
-        method=InstallationMethod.DIRECT_DOWNLOAD
-    )
-
-
 def simulate_installation_by_method(method: InstallationMethod, package_name: str, **kwargs) -> InstallationResult:
     """
     Simule l'installation selon la méthode spécifiée.
@@ -211,7 +95,7 @@ def simulate_installation_by_method(method: InstallationMethod, package_name: st
     Args:
         method: Méthode d'installation
         package_name: Nom du package
-        **kwargs: Arguments pour l'installation
+        **kwargs: Arguments supplémentaires
 
     Returns:
         InstallationResult: Résultat simulé
@@ -221,10 +105,7 @@ def simulate_installation_by_method(method: InstallationMethod, package_name: st
 
     simulation_functions = {
         InstallationMethod.EXE: simulate_exe_installation,
-        InstallationMethod.MSI: simulate_msi_installation,
-        InstallationMethod.WINGET: simulate_winget_installation,
-        InstallationMethod.CHOCOLATEY: simulate_chocolatey_installation,
-        InstallationMethod.DIRECT_DOWNLOAD: simulate_direct_download_installation
+        InstallationMethod.MSI: simulate_msi_installation
     }
 
     simulation_func = simulation_functions.get(method)
@@ -242,7 +123,7 @@ def simulate_installation_by_method(method: InstallationMethod, package_name: st
     except Exception as e:
         return InstallationResult(
             status=InstallationStatus.FAILED,
-            message=f"Erreur pendant la simulation {method.value}: {e}",
+            message=f"Erreur lors de la simulation {method.value}: {e}",
             package_name=package_name,
             method=method
         )

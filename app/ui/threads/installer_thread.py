@@ -139,11 +139,8 @@ class InstallerThread(QThread):
 
         # Mapping des types de méthodes vers les enums
         method_mapping = {
-            "winget": InstallationMethod.WINGET,
-            "direct_download": InstallationMethod.DIRECT_DOWNLOAD,
             "msi": InstallationMethod.MSI,
-            "exe": InstallationMethod.EXE,
-            "chocolatey": InstallationMethod.CHOCOLATEY
+            "exe": InstallationMethod.EXE
         }
 
         for app_name in self.apps_to_install:
@@ -193,16 +190,8 @@ class InstallerThread(QThread):
         Returns:
             str: Le package ID ou nom pour l'installation
         """
-        # Pour Winget et Chocolatey, utiliser le package ID
-        if method.type in ["winget", "chocolatey"]:
-            return method.package if hasattr(method, 'package') else None
-
-        # Pour les autres méthodes, utiliser le nom de l'application comme identifiant
-        elif method.type in ["direct_download", "msi", "exe"]:
-            # On simule, donc on utilise juste le nom de l'app
-            return app.name
-
-        return None
+        # Pour toutes les méthodes (MSI et EXE), utiliser le nom de l'application
+        return app.name
     
     def _on_progress_update(self, progress_info: ProgressInfo):
         """
@@ -252,13 +241,9 @@ class InstallerThread(QThread):
         Returns:
             str: Nom de l'application ou le package ID si non trouvé
         """
-        for app in self.config_loader.get_all_applications():
-            winget_methods = app.get_methods_by_type("winget")
-            for method in winget_methods:
-                if method.package == package_id:
-                    return app.name
-        
-        return package_id  # Fallback
+        # Plus de recherche par package ID winget - simplement retourner le package_id
+        # car maintenant toutes les applications utilisent leur nom comme identifiant
+        return package_id
     
     def _process_final_results(self, results: dict):
         """Traite les résultats finaux et met à jour les statistiques."""
