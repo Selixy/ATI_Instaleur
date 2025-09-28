@@ -152,12 +152,12 @@ QPushButton#SelectAllButton:hover {
 }
 
 QPushButton#DeselectAllButton {
-    background-color: {{COLOR_BTN_HOVER}};
+    background-color: {{COLOR_TITLEBAR_BORDER}};
     color: {{COLOR_TEXT_HOVER}};
 }
 
 QPushButton#DeselectAllButton:hover {
-    background-color: {{COLOR_TITLEBAR_BORDER}};
+    background-color: {{COLOR_BTN_HOVER}};
 }
 
 QPushButton#InstallButton {
