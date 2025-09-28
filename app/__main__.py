@@ -1,12 +1,11 @@
 # app/__main__.py
 from PySide6.QtWidgets import QApplication
-from hook import setup_environment
 import sys
 
 
 def main():
     app = QApplication(sys.argv)
-    setup_environment()
+    # L'environnement est maintenant géré automatiquement par le ResourceManager
 
     # Charger les styles
     from ui import update_styles

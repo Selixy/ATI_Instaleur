@@ -16,26 +16,29 @@ def collect_app_data():
     """Collecte tous les fichiers de données de l'application."""
     datas = []
     
-    # 1. Configuration YAML (CRITIQUE) - chercher dans app/config/
-    config_locations = [
-        APP_DIR / "config" / "config.yaml",
-        PROJECT_ROOT / "config" / "config.yaml",
-        PROJECT_ROOT / "config.yaml",
-    ]
-    
-    config_file = None
-    for loc in config_locations:
-        if loc.exists():
-            config_file = loc
-            break
-    
-    if config_file:
-        datas.append((str(config_file), "config"))
-        print(f"✓ Configuration: {config_file}")
+    # 1. Configuration YAML multi-fichiers (CRITIQUE)
+    config_dir = APP_DIR / "config"
+
+    if not config_dir.exists():
+        print("❌ ERREUR: Répertoire de configuration non trouvé: app/config/")
+        sys.exit(1)
+
+    yaml_count = 0
+    for category_dir in config_dir.iterdir():
+        if category_dir.is_dir() and not category_dir.name.startswith('.'):
+            for yaml_file in category_dir.glob("*.yaml"):
+                rel_path = yaml_file.relative_to(APP_DIR)
+                datas.append((str(yaml_file), str(rel_path.parent)))
+                yaml_count += 1
+            for yml_file in category_dir.glob("*.yml"):
+                rel_path = yml_file.relative_to(APP_DIR)
+                datas.append((str(yml_file), str(rel_path.parent)))
+                yaml_count += 1
+
+    if yaml_count > 0:
+        print(f"✓ Configuration YAML: {yaml_count} fichiers inclus")
     else:
-        print("❌ ERREUR: config.yaml introuvable dans:")
-        for loc in config_locations:
-            print(f"    - {loc}")
+        print("❌ ERREUR: Aucun fichier YAML trouvé dans app/config/")
         sys.exit(1)
     
     # 2. Styles QSS - CORRECTION IMPORTANTE
@@ -87,10 +90,11 @@ def get_hidden_imports():
         'core.installer.hook.progress',
         'core.installer.hook.base_installer',
         'core.installer.winget.installer',
-        'core.installer.winget.parser',
-        'core.installer.winget.validator',
         'core.installer.main_installer',
-        'core.config_loader',
+        'core.YamlLoader',
+
+        # Utilitaires
+        'utils.resource_manager',
         
         # UI modules - AJOUT IMPORTANT
         'ui.update_styles.style_finder',

@@ -1,0 +1,12 @@
+applications:
+  - name: "TortoiseGit"
+    description: "Client Git pour Windows avec interface graphique"
+    category: "Développement"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "msi"
+        url: "https://download.tortoisegit.org/tgit/2.17.0.0/TortoiseGit-2.17.0.2-64bit.msi"
+        silent_args: "REBOOT=ReallySuppress /quiet /norestart"
+        priority: 1
+        note: "MSI avec installation silencieuse"

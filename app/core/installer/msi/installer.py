@@ -1,5 +1,5 @@
 """
-Installateur MSI avec simulation mignonne.
+Installateur MSI avec détection réelle et simulation.
 Module: core.installer.msi.installer
 """
 
@@ -11,6 +11,7 @@ from typing import Optional
 from ..hook.base_installer import BaseInstaller
 from ..hook.status import InstallationResult, InstallationStatus, InstallationMethod
 from ..hook.progress import ProgressInfo
+from ..windows_package_detector import get_windows_detector
 
 
 class MsiInstaller(BaseInstaller):
@@ -45,17 +46,35 @@ class MsiInstaller(BaseInstaller):
         )
 
     def check_package_status(self, package_name: str) -> InstallationResult:
-        """Version simplifiée - on fait semblant que le package MSI existe !"""
-        self.progress_tracker.emit_progress(50, f"🔍 Je cherche le fichier MSI de {package_name}...")
-        time.sleep(0.2)
-        self.progress_tracker.emit_progress(100, f"✅ Fichier MSI de {package_name} trouvé !")
+        """Vérifie réellement si le package/application est installé sur le système."""
+        try:
+            detector = get_windows_detector()
 
-        return InstallationResult(
-            status=InstallationStatus.SUCCESS,
-            message=f"'{package_name}.msi' disponible pour installation !",
-            package_name=package_name,
-            method=self.method
-        )
+            # Vérifier si l'application est installée
+            is_installed = detector.is_package_installed_by_name(package_name)
+
+            if is_installed:
+                return InstallationResult(
+                    status=InstallationStatus.ALREADY_INSTALLED,
+                    message=f"'{package_name}' est déjà installé sur le système",
+                    package_name=package_name,
+                    method=self.method
+                )
+            else:
+                return InstallationResult(
+                    status=InstallationStatus.NOT_FOUND,
+                    message=f"'{package_name}' n'est pas installé",
+                    package_name=package_name,
+                    method=self.method
+                )
+
+        except Exception as e:
+            return InstallationResult(
+                status=InstallationStatus.FAILED,
+                message=f"Erreur lors de la vérification de '{package_name}': {e}",
+                package_name=package_name,
+                method=self.method
+            )
 
     def install_package(self, package_name: str, force_reinstall: bool = False, **kwargs) -> InstallationResult:
         """

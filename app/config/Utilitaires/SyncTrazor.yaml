@@ -1,0 +1,12 @@
+applications:
+  - name: "SyncTrazor"
+    description: "Outil de synchronisation et de sauvegarde de fichiers"
+    category: "Utilitaires"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "exe"
+        url: "https://github.com/canton7/SyncTrayzor/releases/latest"
+        silent_args: "/silent"
+        priority: 1
+        note: "Inno Setup - installation silencieuse"

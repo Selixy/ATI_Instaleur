@@ -1,0 +1,58 @@
+applications:
+  - name: "Blender"
+    description: "Suite de création 3D libre et gratuite"
+    category: "3D/Animation"
+    icon: ""
+    enabled: true
+    has_versions: true
+    default_version_index: 0
+    versions:
+      - name: "4.5 LTS (Recommandé)"
+        version: "4.5.3"
+        methods:
+          - type: "msi"
+            url: "https://download.blender.org/release/Blender4.5/blender-4.5.3-windows-x64.msi"
+            silent_args: "/quiet /norestart"
+            priority: 1
+      - name: "4.3 LTS"
+        version: "4.3.2"
+        methods:
+          - type: "msi"
+            url: "https://download.blender.org/release/Blender4.3/blender-4.3.2-windows-x64.msi"
+            silent_args: "/quiet /norestart"
+            priority: 1
+      - name: "4.2 LTS"
+        version: "4.2.3"
+        methods:
+          - type: "msi"
+            url: "https://download.blender.org/release/Blender4.2/blender-4.2.3-windows-x64.msi"
+            silent_args: "/quiet /norestart"
+            priority: 1
+      - name: "3.6 LTS"
+        version: "3.6.17"
+        methods:
+          - type: "msi"
+            url: "https://download.blender.org/release/Blender3.6/blender-3.6.17-windows-x64.msi"
+            silent_args: "/quiet /norestart"
+            priority: 1
+      - name: "3.3 LTS"
+        version: "3.3.20"
+        methods:
+          - type: "msi"
+            url: "https://download.blender.org/release/Blender3.3/blender-3.3.20-windows-x64.msi"
+            silent_args: "/quiet /norestart"
+            priority: 1
+      - name: "2.93 LTS"
+        version: "2.93.18"
+        methods:
+          - type: "msi"
+            url: "https://download.blender.org/release/Blender2.93/blender-2.93.18-windows-x64.msi"
+            silent_args: "/quiet /norestart"
+            priority: 1
+      - name: "2.83 LTS"
+        version: "2.83.20"
+        methods:
+          - type: "msi"
+            url: "https://download.blender.org/release/Blender2.83/blender-2.83.20-windows64.msi"
+            silent_args: "/quiet /norestart"
+            priority: 1

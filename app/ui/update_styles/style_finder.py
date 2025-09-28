@@ -27,8 +27,7 @@ class StyleFinder:
 
     def _log(self, message: str):
         """Affiche un message de debug si activé."""
-        if self.debug:
-            print(f"[StyleFinder] {message}")
+        pass
 
     def _detect_system_mode(self) -> str:
         """
@@ -242,43 +241,4 @@ class StyleFinder:
 
     def debug_paths(self):
         """Affiche des informations détaillées pour le debug."""
-        print("=" * 60)
-        print("DEBUG - SYSTÈME DE STYLES")
-        print("=" * 60)
-        print(f"Mode d'exécution: {'PyInstaller' if self._is_frozen else 'Développement'}")
-        print(f"Mode couleur: {self.mode}")
-        print(f"Plateforme: {platform.system()}")
-        
-        if self._is_frozen:
-            print(f"Exécutable: {sys.executable}")
-            if hasattr(sys, "_MEIPASS"):
-                print(f"MEIPASS: {sys._MEIPASS}")
-        
-        # Afficher les chemins de base
-        base_paths = self._get_base_paths()
-        print(f"\nChemins de base ({len(base_paths)}):")
-        for i, path in enumerate(base_paths, 1):
-            exists = "✓" if path.exists() else "❌"
-            print(f"  {i}. {exists} {path}")
-        
-        # Afficher les chemins de recherche
-        search_paths = self._get_search_paths(prefer_mode=False)
-        print(f"\nChemins de recherche ({len(search_paths)}):")
-        for i, path in enumerate(search_paths, 1):
-            exists = "✓" if path.exists() else "❌"
-            print(f"  {i}. {exists} {path}")
-        
-        # Tester des fichiers courants
-        test_files = ['base.qss', f'{self.mode}.qss', 'light.qss', 'dark.qss']
-        print(f"\nTest de fichiers:")
-        for filename in test_files:
-            result = self.find_qss_file(filename, prefer_mode=True)
-            status = "✓" if result else "❌"
-            print(f"  {status} {filename}: {result or 'NON TROUVÉ'}")
-        
-        # Cache info
-        print(f"\nCache: {len(self._cache)} entrées")
-        for key, path in self._cache.items():
-            print(f"  {key}: {path}")
-        
-        print("=" * 60)
+        pass

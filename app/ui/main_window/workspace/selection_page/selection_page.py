@@ -5,7 +5,8 @@ from PySide6.QtWidgets import (
     QLabel, QPushButton
 )
 from PySide6.QtCore import Qt, Signal
-from core.config_loader import get_config_loader
+from core.YamlLoader import get_config_loader
+from core.installer.status_checker import get_status_checker
 from .components import CategorySection
 
 
@@ -17,7 +18,9 @@ class SelectionPage(QWidget):
     def __init__(self):
         super().__init__()
         self.config_loader = get_config_loader()
+        self.status_checker = get_status_checker()
         self.category_sections = []
+        self.installation_statuses = {}
         self.setup_ui()
         self.load_applications()
 
@@ -79,10 +82,33 @@ class SelectionPage(QWidget):
         # Obtenir les applications groupées par catégorie
         apps_by_category = self.config_loader.get_applications_grouped_by_category()
 
+        # Vérification des statuts d'installation avec optimisation
+        print("Vérification des statuts d'installation...")
+        all_applications = self.config_loader.get_all_applications()
+
+        # Limiter la vérification si trop d'applications
+        if len(all_applications) > 50:
+            print(f"Optimisation: vérification limitée à 50 premières applications sur {len(all_applications)}")
+            apps_to_check = all_applications[:50]
+        else:
+            apps_to_check = all_applications
+
+        self.installation_statuses = self.status_checker.check_multiple_applications(apps_to_check)
+
+        # Pour les apps non vérifiées, on assume qu'elles ne sont pas installées
+        for app in all_applications:
+            if app.name not in self.installation_statuses:
+                self.installation_statuses[app.name] = False
+
+        # Log des statuts trouvés
+        installed_count = sum(1 for status in self.installation_statuses.values() if status)
+        total_count = len(self.installation_statuses)
+        print(f"Statuts trouvés: {installed_count}/{total_count} applications installées")
+
         # Créer une section pour chaque catégorie
         for category_name, applications in apps_by_category.items():
             if applications:  # Ignorer les catégories vides
-                section = CategorySection(category_name, applications)
+                section = CategorySection(category_name, applications, self.installation_statuses)
 
                 # Connecter les signaux pour mettre à jour le bouton d'installation
                 for card in section.app_cards:
@@ -99,17 +125,24 @@ class SelectionPage(QWidget):
 
     def update_install_button(self):
         """Met à jour l'état du bouton d'installation."""
-        selected_apps = self.get_selected_applications()
-        self.install_button.setEnabled(len(selected_apps) > 0)
+        to_install = self.get_selected_for_installation()
+        to_uninstall = self.get_selected_for_uninstallation()
 
-        # Mettre à jour le texte du bouton
-        if len(selected_apps) == 0:
+        total_selected = len(to_install) + len(to_uninstall)
+        self.install_button.setEnabled(total_selected > 0)
+
+        # Mettre à jour le texte du bouton selon les actions
+        if total_selected == 0:
             self.install_button.setText("Installer les applications sélectionnées")
+        elif len(to_install) > 0 and len(to_uninstall) == 0:
+            self.install_button.setText(f"Installer {len(to_install)} application(s)")
+        elif len(to_install) == 0 and len(to_uninstall) > 0:
+            self.install_button.setText(f"Désinstaller {len(to_uninstall)} application(s)")
         else:
-            self.install_button.setText(f"Installer {len(selected_apps)} application(s)")
+            self.install_button.setText(f"Traiter {total_selected} application(s) ({len(to_install)} inst., {len(to_uninstall)} désinst.)")
 
     def select_all_apps(self):
-        """Sélectionne toutes les applications."""
+        """Sélectionne toutes les applications (sauf celles déjà installées)."""
         for section in self.category_sections:
             section.select_all_checkbox.setChecked(True)
 
@@ -125,8 +158,80 @@ class SelectionPage(QWidget):
             selected_apps.extend(section.get_selected_apps())
         return selected_apps
 
+    def get_selected_for_installation(self):
+        """Retourne les applications sélectionnées qui ne sont PAS installées."""
+        all_selected = self.get_selected_applications()
+        to_install = []
+
+        for app_info in all_selected:
+            app_name = app_info['name']
+            is_installed = self.installation_statuses.get(app_name, False)
+            if not is_installed:
+                to_install.append(app_info)
+
+        return to_install
+
+    def get_selected_for_uninstallation(self):
+        """Retourne les applications sélectionnées qui SONT installées."""
+        all_selected = self.get_selected_applications()
+        to_uninstall = []
+
+        for app_info in all_selected:
+            app_name = app_info['name']
+            is_installed = self.installation_statuses.get(app_name, False)
+            if is_installed:
+                to_uninstall.append(app_info)
+
+        return to_uninstall
+
     def start_installation(self):
-        """Démarre l'installation des applications sélectionnées."""
-        selected_apps = self.get_selected_applications()
-        if selected_apps:
-            self.installation_requested.emit(selected_apps)
+        """Démarre l'installation des applications sélectionnées (non installées seulement)."""
+        # Séparer les applications à installer et à désinstaller
+        to_install = self.get_selected_for_installation()
+        to_uninstall = self.get_selected_for_uninstallation()
+
+        # Log des listes
+        if to_install:
+            install_names = [app['name'] for app in to_install]
+            print(f"Applications à installer: {install_names}")
+
+        if to_uninstall:
+            uninstall_names = [app['name'] for app in to_uninstall]
+            print(f"Applications à désinstaller: {uninstall_names}")
+
+        # Pour l'instant, on n'installe que les applications non installées
+        if to_install:
+            # Convertir en format simple pour compatibilité
+            app_names = [app['name'] for app in to_install]
+            self.installation_requested.emit(app_names)
+        elif to_uninstall:
+            # Si seulement des désinstallations, afficher un message
+            print("Note: Désinstallation pas encore implémentée - seulement des apps installées sélectionnées")
+        else:
+            print("Aucune application à traiter")
+
+    def refresh_installation_statuses(self):
+        """Rafraîchit les statuts d'installation de toutes les applications."""
+        print("Rafraîchissement des statuts d'installation...")
+
+        # Vider le cache du status checker
+        self.status_checker.clear_cache()
+
+        # Re-vérifier tous les statuts
+        all_applications = self.config_loader.get_all_applications()
+        self.installation_statuses = self.status_checker.check_multiple_applications(all_applications)
+
+        # Mettre à jour l'affichage de toutes les cartes
+        for section in self.category_sections:
+            for card in section.app_cards:
+                app_name = card.application.name
+                is_installed = self.installation_statuses.get(app_name, False)
+                card.set_installed_state(is_installed)
+
+        # Mettre à jour le bouton
+        self.update_install_button()
+
+        # Log des nouveaux statuts
+        installed_count = sum(1 for status in self.installation_statuses.values() if status)
+        total_count = len(self.installation_statuses)
+        print(f"Statuts mis à jour: {installed_count}/{total_count} applications installées")

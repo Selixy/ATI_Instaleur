@@ -1,0 +1,12 @@
+applications:
+  - name: "Unreal Engine 5"
+    description: "Moteur de jeu et de création 3D (version 5.3.4)"
+    category: "3D/Animation"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "msi"
+        url: "https://www.epicgames.com/store/en-US/download"
+        silent_args: "/quiet /norestart"
+        priority: 1
+        note: "Installe Epic Games Launcher qui gère ensuite l'installation d'Unreal Engine"

@@ -1,0 +1,12 @@
+applications:
+  - name: "Adobe Creative Cloud"
+    description: "Gestionnaire pour tous les produits Adobe Creative Suite"
+    category: "Graphisme"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "exe"
+        url: "https://creativecloud.adobe.com/apps/download/creative-cloud"
+        silent_args: "--silent"
+        priority: 1
+    note: "Requis pour installer Photoshop, After Effects, Substance, etc."

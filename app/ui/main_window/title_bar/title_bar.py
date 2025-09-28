@@ -5,7 +5,7 @@ from qframelesswindow import TitleBar
 import importlib
 import os
 
-from hook import is_frozen
+from utils.resource_manager import get_resource_manager
 from config import TITLE_BAR_BUTTONS
 
 

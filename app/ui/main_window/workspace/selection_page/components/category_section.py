@@ -14,10 +14,11 @@ class CategorySection(QWidget):
 
     app_selection_changed = Signal()  # Signal émis quand une application de cette section est cochée/décochée
 
-    def __init__(self, category_name, applications):
+    def __init__(self, category_name, applications, installation_statuses=None):
         super().__init__()
         self.category_name = category_name
         self.applications = applications
+        self.installation_statuses = installation_statuses or {}
         self.app_cards = []
         self.setup_ui()
 
@@ -60,7 +61,10 @@ class CategorySection(QWidget):
         # Ajouter les cartes d'applications
         columns = 2  # Nombre de colonnes
         for i, app in enumerate(self.applications):
-            card = ApplicationCard(app)
+            # Vérifier l'état d'installation
+            is_installed = self.installation_statuses.get(app.name, False)
+
+            card = ApplicationCard(app, is_installed=is_installed)
             card.toggled.connect(self.on_app_toggled)
             self.app_cards.append(card)
 
@@ -84,22 +88,28 @@ class CategorySection(QWidget):
         else:
             is_checked = state == 2  # 2 = Checked, 0 = Unchecked
 
-        # Sélectionner/désélectionner toutes les applications de cette catégorie
+        # Sélectionner/désélectionner seulement les applications NON installées
         for card in self.app_cards:
-            card.set_selected(is_checked)
+            # Exclure les applications déjà installées du select all
+            if not card.get_installation_state():
+                card.set_selected(is_checked)
 
     def on_app_toggled(self, app_name, is_selected):
         """Gestionnaire quand une application est sélectionnée/désélectionnée."""
-        # Mettre à jour l'état de la checkbox "Tout sélectionner"
-        selected_count = sum(1 for card in self.app_cards if card.is_selected())
-        total_count = len(self.app_cards)
+        # Compter seulement les applications NON installées pour le select all
+        non_installed_cards = [card for card in self.app_cards if not card.get_installation_state()]
+        selected_non_installed_count = sum(1 for card in non_installed_cards if card.is_selected())
+        total_non_installed_count = len(non_installed_cards)
 
         # Temporairement déconnecter le signal pour éviter la récursion
         self.select_all_checkbox.blockSignals(True)
 
-        if selected_count == 0:
+        if total_non_installed_count == 0:
+            # Si toutes les apps sont installées, décocher
             self.select_all_checkbox.setCheckState(Qt.Unchecked)
-        elif selected_count == total_count:
+        elif selected_non_installed_count == 0:
+            self.select_all_checkbox.setCheckState(Qt.Unchecked)
+        elif selected_non_installed_count == total_non_installed_count:
             self.select_all_checkbox.setCheckState(Qt.Checked)
         else:
             self.select_all_checkbox.setCheckState(Qt.PartiallyChecked)

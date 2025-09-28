@@ -7,11 +7,13 @@ class ApplicationCard(QFrame):
     toggled = Signal(str, bool)  # Signal émis quand la case est cochée/décochée
     version_changed = Signal(str, str)  # Signal émis quand la version change (app_name, version)
 
-    def __init__(self, application):
+    def __init__(self, application, is_installed=False):
         super().__init__()
         self.application = application
         self.selected_version = None
+        self.is_installed = is_installed
         self.setup_ui()
+        self.update_installed_state()
     
     def setup_ui(self):
         """Configure l'interface de la carte."""
@@ -39,8 +41,11 @@ class ApplicationCard(QFrame):
         desc_label.setProperty("class", "AppDescLabel")  # Classe CSS pour le style
         layout.addWidget(desc_label)
         
-        # Catégorie
-        category_label = QLabel(f"Catégorie: {self.application.category}")
+        # Catégorie (avec indicateur d'installation)
+        category_text = f"Catégorie: {self.application.category}"
+        if self.is_installed:
+            category_text += " (INSTALLÉ)"
+        category_label = QLabel(category_text)
         category_label.setProperty("class", "AppCategoryLabel")  # Classe CSS pour le style
         layout.addWidget(category_label)
         
@@ -133,3 +138,33 @@ class ApplicationCard(QFrame):
 
         # Émettre manuellement le signal toggled pour informer les parents
         self.toggled.emit(self.application.name, selected)
+
+    def update_installed_state(self):
+        """Met à jour l'apparence de la carte selon l'état d'installation."""
+        # Définir la propriété CSS pour le style
+        self.setProperty("installed", "true" if self.is_installed else "false")
+
+        # Forcer la mise à jour du style
+        self.style().unpolish(self)
+        self.style().polish(self)
+
+    def set_installed_state(self, is_installed: bool):
+        """Définit l'état d'installation et met à jour l'apparence."""
+        if self.is_installed != is_installed:
+            self.is_installed = is_installed
+            self.update_installed_state()
+
+            # Mettre à jour le texte de la catégorie
+            category_text = f"Catégorie: {self.application.category}"
+            if self.is_installed:
+                category_text += " (INSTALLÉ)"
+
+            # Trouver et mettre à jour le label de catégorie
+            for child in self.findChildren(QLabel):
+                if child.property("class") == "AppCategoryLabel":
+                    child.setText(category_text)
+                    break
+
+    def get_installation_state(self) -> bool:
+        """Retourne l'état d'installation de l'application."""
+        return self.is_installed

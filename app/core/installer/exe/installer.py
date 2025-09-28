@@ -37,17 +37,36 @@ class ExeInstaller(BaseInstaller):
         )
 
     def check_package_status(self, package_name: str) -> InstallationResult:
-        """Version simplifiée - on fait semblant que l'EXE existe !"""
-        self.progress_tracker.emit_progress(50, f"🔍 Je cherche l'installeur de {package_name}...")
-        time.sleep(0.2)
-        self.progress_tracker.emit_progress(100, f"✅ Installeur de {package_name} trouvé !")
+        """Vérifie réellement si l'application est installée sur le système."""
+        try:
+            from ..windows_package_detector import get_windows_detector
+            detector = get_windows_detector()
 
-        return InstallationResult(
-            status=InstallationStatus.SUCCESS,
-            message=f"'{package_name}_setup.exe' prêt pour installation !",
-            package_name=package_name,
-            method=self.method
-        )
+            # Vérifier si l'application est installée
+            is_installed = detector.is_package_installed_by_name(package_name)
+
+            if is_installed:
+                return InstallationResult(
+                    status=InstallationStatus.ALREADY_INSTALLED,
+                    message=f"'{package_name}' est déjà installé sur le système",
+                    package_name=package_name,
+                    method=self.method
+                )
+            else:
+                return InstallationResult(
+                    status=InstallationStatus.NOT_FOUND,
+                    message=f"'{package_name}' n'est pas installé",
+                    package_name=package_name,
+                    method=self.method
+                )
+
+        except Exception as e:
+            return InstallationResult(
+                status=InstallationStatus.FAILED,
+                message=f"Erreur lors de la vérification de '{package_name}': {e}",
+                package_name=package_name,
+                method=self.method
+            )
 
     def install_package(self, package_name: str, force_reinstall: bool = False, **kwargs) -> InstallationResult:
         """

@@ -1,0 +1,37 @@
+applications:
+  - name: "Autodesk Maya"
+    description: "Logiciel de modélisation et d'animation 3D"
+    category: "3D/Animation"
+    icon: ""
+    enabled: true
+    has_versions: true
+    default_version_index: 1
+    versions:
+      - name: "2025"
+        version: "2025"
+        methods:
+          - type: "exe"
+            url: "https://efulfillment.autodesk.com/NetSWDLD/2025/MAYA/FD0B8EC0-CA1C-3F6E-A3FC-69A7A1BD4C4E/SFX/Autodesk_Maya_2025_ML_Windows_64bit_dlm.sfx.exe"
+            silent_args: "--mode unattended --accept_eula"
+            priority: 1
+      - name: "2024 (Recommandé)"
+        version: "2024.3"
+        methods:
+          - type: "exe"
+            url: "https://efulfillment.autodesk.com/NetSWDLD/2024/MAYA/42762096-E3FE-3521-9687-693E0B913A4F/SFX/Autodesk_Maya_2024_1_Update_Windows_64bit_dlm_001_002.sfx.exe"
+            silent_args: "--mode unattended --accept_eula"
+            priority: 1
+      - name: "2023 LTS"
+        version: "2023.3"
+        methods:
+          - type: "exe"
+            url: "https://efulfillment.autodesk.com/NetSWDLD/2023/MAYA/756B4F18-3772-391C-81C9-69A4F8F12177/SFX/Autodesk_Maya_2023_ML_Windows_64bit_dlm.sfx.exe"
+            silent_args: "--mode unattended --accept_eula"
+            priority: 1
+      - name: "2022 LTS"
+        version: "2022.5"
+        methods:
+          - type: "exe"
+            url: "https://efulfillment.autodesk.com/NetSWDLD/2022/MAYA/756B4F18-3772-391C-81C9-69A4F8F12177/SFX/Autodesk_Maya_2022_ML_Windows_64bit_dlm.sfx.exe"
+            silent_args: "--mode unattended --accept_eula"
+            priority: 1

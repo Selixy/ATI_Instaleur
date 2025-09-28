@@ -1,0 +1,11 @@
+applications:
+  - name: "Visual Studio"
+    description: "Environnement de développement intégré (IDE) pour Windows"
+    category: "Développement"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "exe"
+        url: "https://aka.ms/vs/17/release/vs_Community.exe"
+        silent_args: "--nocache --wait --noUpdateInstaller --noWeb --allWorkloads --includeRecommended --includeOptional --quiet --norestart"
+        priority: 1

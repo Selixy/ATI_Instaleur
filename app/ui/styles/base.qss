@@ -249,6 +249,62 @@ ApplicationCard QCheckBox::indicator:checked:hover {
 }
 
 /* ===========================
+   STYLES POUR APPLICATIONS INSTALLÉES
+   =========================== */
+
+/* Cartes d'applications installées - BORDURE ET FOND NORMAUX */
+ApplicationCard[installed="true"] {
+    border: 1px solid {{COLOR_TITLEBAR_BORDER}};
+    border-radius: 8px;
+    background-color: {{COLOR_BG}};
+    margin: 5px;
+}
+
+/* SURVOL ROUGE pour applications installées */
+ApplicationCard[installed="true"]:hover {
+    border-color: #dc3545;
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
+/* Labels dans ApplicationCard installées - COULEURS NORMALES */
+ApplicationCard[installed="true"] QLabel[class="AppNameLabel"] {
+    font-weight: bold;
+    font-size: 14px;
+    color: {{COLOR_TEXT_HOVER}};
+}
+
+ApplicationCard[installed="true"] QLabel[class="AppCategoryLabel"] {
+    color: #0078d4;
+    font-size: 11px;
+}
+
+/* Checkbox pour applications installées - BORDURE NORMALE */
+ApplicationCard[installed="true"] QCheckBox::indicator {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    border: 1px solid {{COLOR_TITLEBAR_BORDER}};
+    background-color: {{COLOR_BG}};
+}
+
+/* SURVOL ROUGE pour checkbox */
+ApplicationCard[installed="true"] QCheckBox::indicator:hover {
+    border-color: #dc3545;
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
+/* SÉLECTION ROUGE pour checkbox */
+ApplicationCard[installed="true"] QCheckBox::indicator:checked {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    image: url(:/icons/check.png);
+}
+
+ApplicationCard[installed="true"] QCheckBox::indicator:checked:hover {
+    background-color: #c82333;
+}
+
+/* ===========================
    PAGE D'INSTALLATION
    =========================== */
 

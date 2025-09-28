@@ -75,6 +75,14 @@ class Workspace(QWidget):
     def show_selection_page(self):
         """Retourne à la page de sélection des applications."""
         print("[DEBUG] Retour à la page de sélection")
+
+        # S'assurer que la page d'installation est dans un état propre
+        self.installation_page.reset_ui_state()
+
+        # Rafraîchir les statuts d'installation après un retour (installation possible)
+        self.selection_page.refresh_installation_statuses()
+
+        # Retourner à la page de sélection
         self.stacked_widget.setCurrentWidget(self.selection_page)
     
     def on_installation_completed(self):

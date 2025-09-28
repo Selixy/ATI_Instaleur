@@ -13,32 +13,27 @@ from . import simulation
 # Imports sécurisés des installateurs
 try:
     from .winget import WingetInstaller
-except ImportError as e:
-    print(f"Impossible d'importer WingetInstaller: {e}")
+except ImportError:
     WingetInstaller = None
 
 try:
     from .direct_download import DirectDownloadInstaller
-except ImportError as e:
-    print(f"Impossible d'importer DirectDownloadInstaller: {e}")
+except ImportError:
     DirectDownloadInstaller = None
 
 try:
     from .msi import MsiInstaller
-except ImportError as e:
-    print(f"Impossible d'importer MsiInstaller: {e}")
+except ImportError:
     MsiInstaller = None
 
 try:
     from .exe import ExeInstaller
-except ImportError as e:
-    print(f"Impossible d'importer ExeInstaller: {e}")
+except ImportError:
     ExeInstaller = None
 
 try:
     from .chocolatey import ChocolateyInstaller
-except ImportError as e:
-    print(f"Impossible d'importer ChocolateyInstaller: {e}")
+except ImportError:
     ChocolateyInstaller = None
 
 

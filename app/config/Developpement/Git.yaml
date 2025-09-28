@@ -1,0 +1,11 @@
+applications:
+  - name: "Git"
+    description: "Système de contrôle de version décentralisé"
+    category: "Développement"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "exe"
+        url: "https://github.com/git-for-windows/git/releases/latest/download/Git-2.47.1-64-bit.exe"
+        silent_args: "/VERYSILENT /NORESTART /NOCANCEL /SP- /CLOSEAPPLICATIONS /RESTARTAPPLICATIONS /COMPONENTS=ext,ext\\shellhere,ext\\guihere,gitlfs,assoc,assoc_sh"
+        priority: 1

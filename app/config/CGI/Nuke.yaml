@@ -1,0 +1,24 @@
+applications:
+  - name: "The Foundry NukeX"
+    description: "Logiciel de composition et d'effets visuels"
+    category: "3D/Animation"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "exe"
+        url: "https://www.foundry.com/products/nuke/download"
+        silent_args: "/S /ACCEPT-FOUNDRY-EULA"
+        priority: 1
+        note: "Installeur exe avec installation silencieuse"
+
+  - name: "The Foundry NukeStudio"
+    description: "Logiciel de composition et de montage pour les effets visuels"
+    category: "3D/Animation"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "exe"
+        url: "https://www.foundry.com/products/nuke/download"
+        silent_args: "/S /ACCEPT-FOUNDRY-EULA"
+        priority: 1
+        note: "Inclus avec Nuke - installeur exe silencieux"
