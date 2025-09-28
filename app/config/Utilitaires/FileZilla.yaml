@@ -1,0 +1,11 @@
+applications:
+  - name: "FileZilla"
+    description: "Client FTP, FTPS et SFTP"
+    category: "Utilitaires"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "exe"
+        url: "https://download.filezilla-project.org/client/FileZilla_3.68.1_win64-setup.exe"
+        silent_args: "/S"
+        priority: 1

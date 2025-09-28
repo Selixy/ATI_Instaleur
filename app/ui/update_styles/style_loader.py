@@ -22,8 +22,7 @@ class StyleLoader:
 
     def _log(self, message: str):
         """Affiche un message de debug si activé."""
-        if self.debug:
-            print(f"[StyleLoader] {message}")
+        pass
 
     def _extract_variables(self, content: str) -> Dict[str, str]:
         """
@@ -325,25 +324,4 @@ class StyleLoader:
 
     def debug_info(self):
         """Affiche des informations de debug détaillées."""
-        print("=" * 60)
-        print("DEBUG - STYLE LOADER")
-        print("=" * 60)
-        print(f"Mode actuel: {self.finder.mode}")
-        print(f"Debug activé: {self.debug}")
-        
-        # Info sur les caches
-        cache_info = self.get_cache_info()
-        print(f"Caches: {cache_info}")
-        
-        # Styles chargés
-        if self._loaded_styles:
-            print(f"\nStyles en cache:")
-            for key, content in self._loaded_styles.items():
-                print(f"  {key}: {len(content)} caractères")
-        
-        # Modes disponibles
-        available_modes = self.get_available_modes()
-        print(f"\nModes disponibles: {available_modes}")
-        
-        # Déléguer au finder pour les détails des chemins
-        self.finder.debug_paths()
+        pass

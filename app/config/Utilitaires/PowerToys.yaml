@@ -1,0 +1,12 @@
+applications:
+  - name: "PowerToys"
+    description: "Utilitaires système pour améliorer la productivité sous Windows"
+    category: "Utilitaires"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "exe"
+        url: "https://github.com/microsoft/PowerToys/releases/download/v0.94.2/PowerToysSetup-0.94.2-x64.exe"
+        silent_args: "--silent"
+        priority: 1
+        note: "GitHub releases - installation silencieuse"

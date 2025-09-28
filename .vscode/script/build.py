@@ -13,25 +13,29 @@ def check_resources():
     """Vérifie que les ressources critiques sont présentes avant le build."""
     print("Vérification des ressources...")
     
-    # Configuration YAML - chercher dans app/config/
-    config_locations = [
-        ROOT / "app" / "config" / "config.yaml",
-        ROOT / "config" / "config.yaml", 
-        ROOT / "config.yaml",
-    ]
-    
-    config_file = None
-    for loc in config_locations:
-        if loc.exists():
-            config_file = loc
-            break
-    
-    if config_file:
-        print(f"✓ Configuration YAML: {config_file}")
+    # Configuration YAML - vérifier la structure multi-fichiers
+    config_dir = ROOT / "app" / "config"
+
+    if not config_dir.exists():
+        print("❌ ERREUR: Répertoire de configuration non trouvé: app/config/")
+        return False
+
+    # Compter les fichiers YAML dans les sous-dossiers
+    yaml_count = 0
+    categories = []
+    for category_dir in config_dir.iterdir():
+        if category_dir.is_dir() and not category_dir.name.startswith('.'):
+            yaml_files = list(category_dir.glob("*.yaml")) + list(category_dir.glob("*.yml"))
+            if yaml_files:
+                yaml_count += len(yaml_files)
+                categories.append(f"{category_dir.name} ({len(yaml_files)} fichiers)")
+
+    if yaml_count > 0:
+        print(f"✓ Configuration YAML: {yaml_count} fichiers dans {len(categories)} catégories")
+        for cat in categories:
+            print(f"    - {cat}")
     else:
-        print("❌ Configuration YAML non trouvée dans:")
-        for loc in config_locations:
-            print(f"    - {loc}")
+        print("❌ ERREUR: Aucun fichier YAML trouvé dans app/config/")
         return False
     
     critical_files = [
@@ -127,7 +131,7 @@ if internal_path.exists():
     sys.path.insert(0, str(internal_path))
 
 try:
-    from core.config_loader import get_config_loader
+    from core.YamlLoader import get_config_loader
     
     print("Test du chargement de configuration...")
     config = get_config_loader()

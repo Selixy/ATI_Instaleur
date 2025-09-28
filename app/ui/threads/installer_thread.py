@@ -10,7 +10,7 @@ import time
 
 from core.installer import create_main_installer, InstallationStatus, InstallationMethod
 from core.installer.hook import ProgressInfo
-from core.config_loader import get_config_loader
+from core.YamlLoader import get_config_loader
 
 
 class InstallerThread(QThread):
@@ -57,6 +57,9 @@ class InstallerThread(QThread):
         self.update_log.emit("Annulation en cours...")
         self.is_cancelled = True
         self.installer.cancel_installation()
+
+        # Émettre immédiatement le signal d'annulation
+        self.cancelled.emit()
     
     def run(self):
         """Méthode principale du thread Qt."""

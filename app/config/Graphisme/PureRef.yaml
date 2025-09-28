@@ -1,0 +1,12 @@
+applications:
+  - name: "PureRef"
+    description: "Outil de référence visuelle pour les artistes"
+    category: "Graphisme"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "exe"
+        url: "https://www.pureref.com/download.php"
+        silent_args: "/S"
+        priority: 1
+        note: "Installeur NSIS avec installation silencieuse - /S sensible à la casse"

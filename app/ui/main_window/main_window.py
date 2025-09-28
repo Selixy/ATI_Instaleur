@@ -3,7 +3,7 @@ from PySide6.QtGui import QIcon
 from PySide6.QtCore import Qt
 from qframelesswindow import FramelessMainWindow
 from .title_bar import CustomTitleBar
-from hook import resolve_icon
+from utils.resource_manager import get_icon_path
 from .workspace import Workspace
 
 class MainWindow(FramelessMainWindow):
@@ -15,9 +15,9 @@ class MainWindow(FramelessMainWindow):
         self._setup_central_widget()  # combine barre de titre + workspace
 
     def _set_window_icon(self):
-        icon_path = resolve_icon("app.ico")
+        icon_path = get_icon_path("app.ico")
         if icon_path:
-            self.setWindowIcon(QIcon(icon_path))
+            self.setWindowIcon(QIcon(str(icon_path)))
 
     def _setup_window_properties(self):
         """Configure les propriétés de la fenêtre (taille, position, etc.)"""

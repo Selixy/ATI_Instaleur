@@ -1,0 +1,23 @@
+applications:
+  - name: "Visual Studio Code"
+    description: "Éditeur de code source léger et puissant"
+    category: "Développement"
+    icon: ""
+    enabled: true
+    has_versions: true
+    default_version_index: 0
+    versions:
+      - name: "Stable (Recommandé)"
+        version: "stable"
+        methods:
+          - type: "exe"
+            url: "https://code.visualstudio.com/sha/download?build=stable&os=win32-x64"
+            silent_args: "/verysilent /norestart /mergetasks=!runcode"
+            priority: 1
+      - name: "Insiders (Beta)"
+        version: "insiders"
+        methods:
+          - type: "exe"
+            url: "https://code.visualstudio.com/sha/download?build=insiders&os=win32-x64"
+            silent_args: "/verysilent /norestart /mergetasks=!runcode"
+            priority: 1

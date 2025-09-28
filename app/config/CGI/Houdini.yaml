@@ -1,0 +1,13 @@
+applications:
+  - name: "Houdini"
+    description: "Logiciel de création procédurale 3D (version 20.5 pour nous)"
+    category: "3D/Animation"
+    icon: ""
+    enabled: true
+    methods:
+      # Houdini Launcher - gère automatiquement l'installation de Houdini
+      - type: "exe"
+        url: "https://www.sidefx.com/download/"
+        silent_args: "/S"
+        priority: 1
+        note: "Installe le launcher Houdini qui gère ensuite l'installation de Houdini"

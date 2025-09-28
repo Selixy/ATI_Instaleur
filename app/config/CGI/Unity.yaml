@@ -1,0 +1,11 @@
+applications:
+  - name: "Unity Hub"
+    description: "Gestionnaire pour le moteur de jeu Unity"
+    category: "3D/Animation"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "exe"
+        url: "https://public-cdn.cloud.unity3d.com/hub/prod/UnityHubSetup.exe"
+        silent_args: "/S"
+        priority: 1

@@ -1,0 +1,12 @@
+applications:
+  - name: "The Foundry Mari"
+    description: "Logiciel de texturing 3D"
+    category: "3D/Animation"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "exe"
+        url: "https://www.foundry.com/products/mari/download"
+        silent_args: "/S"
+        priority: 1
+        note: "Installeur exe avec installation silencieuse"

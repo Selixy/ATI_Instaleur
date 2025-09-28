@@ -8,7 +8,11 @@
       "Bash(.venv/Scripts/python.exe:*)",
       "Bash(python test_maya_mobu_versions.py:*)",
       "Bash(python test_default_version_index.py:*)",
-      "Bash(python test_factorized_config.py)"
+      "Bash(python test_factorized_config.py)",
+      "Bash(python:*)",
+      "Bash(del config_loader.py)",
+      "Bash(dir)",
+      "Bash(dir:*)"
     ],
     "deny": [],
     "ask": []

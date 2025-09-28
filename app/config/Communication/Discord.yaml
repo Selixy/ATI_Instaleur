@@ -1,0 +1,11 @@
+applications:
+  - name: "Discord"
+    description: "Plateforme de communication vocale et textuelle"
+    category: "Communication"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "exe"
+        url: "https://discord.com/api/downloads/distributions/app/installers/latest?channel=stable&platform=win&arch=x64"
+        silent_args: "/S"
+        priority: 1

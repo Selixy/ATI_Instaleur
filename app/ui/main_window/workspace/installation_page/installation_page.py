@@ -197,7 +197,19 @@ class InstallationPage(QWidget):
     def cancel_installation(self):
         """Annule l'installation en cours."""
         if self.installer_thread and self.installer_thread.isRunning():
+            # Désactiver le bouton annuler pour éviter les clics multiples
+            self.cancel_button.setEnabled(False)
+            self.cancel_button.setText("Annulation...")
+
+            # Mettre à jour l'interface immédiatement
+            self.current_step_label.setText("Annulation en cours...")
+            self.update_log("Demande d'annulation envoyée...")
+
+            # Arrêter le thread d'installation
             self.installer_thread.stop_installation()
+        else:
+            # Si aucune installation n'est en cours, retourner directement à la sélection
+            self.back_to_selection.emit()
 
     def on_installation_finished(self):
         """Gestionnaire appelé quand l'installation est terminée."""
@@ -206,9 +218,34 @@ class InstallationPage(QWidget):
 
     def on_installation_cancelled(self):
         """Gestionnaire appelé quand l'installation est annulée."""
-        self.finish_button.setVisible(True)
-        self.cancel_button.setVisible(False)
+        self.update_log("Installation annulée par l'utilisateur")
+
+        # Remettre l'interface dans un état propre
+        self.reset_ui_state()
+
+        # Retourner automatiquement à la page de sélection après annulation
+        self.back_to_selection.emit()
+
+    def reset_ui_state(self):
+        """Remet l'interface dans un état propre."""
+        # Remettre les boutons dans leur état initial
+        self.cancel_button.setEnabled(True)
+        self.cancel_button.setText("Annuler")
+        self.cancel_button.setVisible(True)
+        self.finish_button.setVisible(False)
+
+        # Remettre les labels dans un état neutre
+        self.current_app_label.setText("Aucune application")
+        self.current_step_label.setText("Prêt")
+        self.subtitle_label.setText("0 application(s) à installer")
+
+        # Remettre les barres de progression à zéro
+        self.global_progress_bar.setValue(0)
+        self.current_progress_bar.setValue(0)
+        self.global_percent_label.setText("0%")
+        self.current_percent_label.setText("0%")
 
     def on_finish_clicked(self):
         """Émet le signal pour revenir à la page de sélection."""
+        self.reset_ui_state()
         self.back_to_selection.emit()

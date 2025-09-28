@@ -1,0 +1,12 @@
+applications:
+  - name: "DJV"
+    description: "Visionneuse d'images et de vidéos pour les professionnels de la 3D"
+    category: "Utilitaires"
+    icon: ""
+    enabled: true
+    methods:
+      - type: "exe"
+        url: "https://sourceforge.net/projects/djv/files/djv-beta/2.0.8/DJV-2.0.8-win64.exe/download"
+        silent_args: "/S"
+        priority: 1
+        note: "NSIS - installation silencieuse"
