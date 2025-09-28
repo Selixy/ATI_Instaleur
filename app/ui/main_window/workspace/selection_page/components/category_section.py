@@ -111,5 +111,15 @@ class CategorySection(QWidget):
         self.app_selection_changed.emit()
 
     def get_selected_apps(self):
-        """Retourne la liste des applications sélectionnées."""
-        return [card.application.name for card in self.app_cards if card.is_selected()]
+        """Retourne la liste des applications sélectionnées avec leurs informations de version."""
+        selected_apps = []
+        for card in self.app_cards:
+            if card.is_selected():
+                app_info = {
+                    'name': card.application.name,
+                    'application': card.application,
+                    'selected_version': card.get_selected_version(),
+                    'methods': card.get_methods_for_installation()
+                }
+                selected_apps.append(app_info)
+        return selected_apps
