@@ -12,16 +12,6 @@ from . import simulation
 
 # Imports sécurisés des installateurs
 try:
-    from .winget import WingetInstaller
-except ImportError:
-    WingetInstaller = None
-
-try:
-    from .direct_download import DirectDownloadInstaller
-except ImportError:
-    DirectDownloadInstaller = None
-
-try:
     from .msi import MsiInstaller
 except ImportError:
     MsiInstaller = None
@@ -30,11 +20,6 @@ try:
     from .exe import ExeInstaller
 except ImportError:
     ExeInstaller = None
-
-try:
-    from .chocolatey import ChocolateyInstaller
-except ImportError:
-    ChocolateyInstaller = None
 
 
 class MainInstaller:
@@ -47,11 +32,8 @@ class MainInstaller:
 
         # Initialiser les installateurs de manière sécurisée
         installer_classes = {
-            InstallationMethod.WINGET: WingetInstaller,
-            InstallationMethod.DIRECT_DOWNLOAD: DirectDownloadInstaller,
             InstallationMethod.MSI: MsiInstaller,
-            InstallationMethod.EXE: ExeInstaller,
-            InstallationMethod.CHOCOLATEY: ChocolateyInstaller
+            InstallationMethod.EXE: ExeInstaller
         }
 
         for method, installer_class in installer_classes.items():
@@ -120,8 +102,8 @@ class MainInstaller:
         """Vérifie si le mode simulation est activé."""
         return self.simulation_mode
     
-    def install_packages(self, packages: List[str], 
-                        preferred_method: InstallationMethod = InstallationMethod.WINGET,
+    def install_packages(self, packages: List[str],
+                        preferred_method: InstallationMethod = InstallationMethod.EXE,
                         **kwargs) -> Dict[str, InstallationResult]:
         """
         Installe plusieurs packages.
@@ -184,7 +166,7 @@ class MainInstaller:
         return results
     
     def install_single_package(self, package_name: str,
-                              preferred_method: InstallationMethod = InstallationMethod.WINGET,
+                              preferred_method: InstallationMethod = InstallationMethod.EXE,
                               fallback_methods: Optional[List[InstallationMethod]] = None,
                               **kwargs) -> InstallationResult:
         """

@@ -16,46 +16,62 @@ class InstallationStatusChecker:
         self.main_installer = MainInstaller()
         self._cache: Dict[str, bool] = {}
 
-    def check_application_status(self, app: Application) -> bool:
+    def check_application_status(self, app: Application, version_info=None) -> bool:
         """
         Vérifie si une application est installée.
 
         Args:
             app: L'application à vérifier
+            version_info: Information de version spécifique (optionnel)
 
         Returns:
             bool: True si l'application est installée, False sinon
         """
+        # Créer une clé de cache qui inclut la version si spécifiée
+        cache_key = app.name
+        target_version = None
+
+        if version_info:
+            if hasattr(version_info, 'version'):
+                target_version = version_info.version
+                cache_key = f"{app.name}:{target_version}"
+            elif isinstance(version_info, str):
+                target_version = version_info
+                cache_key = f"{app.name}:{target_version}"
+
         # Vérifier le cache d'abord
-        if app.name in self._cache:
-            return self._cache[app.name]
+        if cache_key in self._cache:
+            return self._cache[cache_key]
 
         is_installed = False
 
         # Vérifier avec la méthode préférée
-        preferred_method = app.get_preferred_method()
-        if preferred_method:
-            is_installed = self._check_with_method(app, preferred_method)
+        methods_to_check = []
+        if version_info and hasattr(version_info, 'methods'):
+            methods_to_check = version_info.methods
+        else:
+            preferred_method = app.get_preferred_method()
+            if preferred_method:
+                methods_to_check.append(preferred_method)
+            methods_to_check.extend([m for m in app.methods if m != preferred_method])
 
-        # Si pas trouvé avec la méthode préférée, essayer les autres
-        if not is_installed:
-            for method in app.methods:
-                if method != preferred_method:
-                    if self._check_with_method(app, method):
-                        is_installed = True
-                        break
+        for method in methods_to_check:
+            if self._check_with_method(app, method, target_version):
+                is_installed = True
+                break
 
         # Mettre en cache le résultat
-        self._cache[app.name] = is_installed
+        self._cache[cache_key] = is_installed
         return is_installed
 
-    def _check_with_method(self, app: Application, method) -> bool:
+    def _check_with_method(self, app: Application, method, target_version: str = None) -> bool:
         """
         Vérifie l'installation avec une méthode spécifique.
 
         Args:
             app: L'application à vérifier
             method: La méthode d'installation à utiliser
+            target_version: Version spécifique à vérifier (optionnel)
 
         Returns:
             bool: True si installé, False sinon
@@ -63,11 +79,8 @@ class InstallationStatusChecker:
         try:
             # Mapping des types de méthodes vers les enums
             method_mapping = {
-                "winget": InstallationMethod.WINGET,
-                "direct_download": InstallationMethod.DIRECT_DOWNLOAD,
                 "msi": InstallationMethod.MSI,
-                "exe": InstallationMethod.EXE,
-                "chocolatey": InstallationMethod.CHOCOLATEY
+                "exe": InstallationMethod.EXE
             }
 
             method_enum = method_mapping.get(method.type)
@@ -81,9 +94,15 @@ class InstallationStatusChecker:
             if not package_id:
                 return False
 
-            # Vérifier le statut
-            result = installer.check_package_status(package_id)
-            return result.status == InstallationStatus.ALREADY_INSTALLED
+            # Vérifier le statut - si version spécifiée, utiliser le détecteur Windows directement
+            if target_version:
+                from core.installer.windows_package_detector import get_windows_detector
+                detector = get_windows_detector()
+                return detector.is_package_installed_by_name(app.name, target_version)
+            else:
+                # Utiliser la méthode normale pour compatibilité
+                result = installer.check_package_status(package_id)
+                return result.status == InstallationStatus.ALREADY_INSTALLED
 
         except Exception:
             # En cas d'erreur, on considère que ce n'est pas installé
@@ -100,11 +119,7 @@ class InstallationStatusChecker:
         Returns:
             str: Le package ID ou nom pour la vérification
         """
-        # Pour Winget et Chocolatey, utiliser le package ID
-        if method.type in ["winget", "chocolatey"]:
-            return method.package if hasattr(method, 'package') and method.package else app.name
-
-        # Pour les autres méthodes, utiliser le nom de l'application
+        # Pour toutes les méthodes (MSI et EXE), utiliser le nom de l'application
         return app.name
 
     def check_multiple_applications(self, apps: List[Application]) -> Dict[str, bool]:

@@ -401,11 +401,8 @@ class YamlLoader:
         Result = namedtuple('Result', ['is_success'])
 
         return {
-            'winget': Result(is_success=True),
             'msi': Result(is_success=True),
-            'exe': Result(is_success=True),
-            'chocolatey': Result(is_success=True),
-            'direct_download': Result(is_success=True)
+            'exe': Result(is_success=True)
         }
 
 
