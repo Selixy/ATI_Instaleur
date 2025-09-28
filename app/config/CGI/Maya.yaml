@@ -11,7 +11,7 @@ applications:
         version: "2026"
         methods:
           - type: "exe"
-            url: "https://efulfillment.autodesk.com/NetSWDLD/2026/MAYA/FD0B8EC0-CA1C-3F6E-A3FC-69A7A1BD4C4E/SFX/Autodesk_Maya_2026_ML_Windows_64bit_dlm.sfx.exe"
+            url: "https://efulfillment.autodesk.com/NetSWDLD/ODIS/prd/2026/MAYA/3AA21D7E-69DD-30F8-AE4E-DBF0DBF5C78E/SFX/Autodesk_Maya_2026_ML_Windows_64bit_db_001_002.exe"
             silent_args: "--mode unattended --accept_eula"
             priority: 1
       - name: "2025"
@@ -22,7 +22,7 @@ applications:
             silent_args: "--mode unattended --accept_eula"
             priority: 1
       - name: "2024 (Recommandé)"
-        version: "2024.3"
+        version: "2024"
         methods:
           - type: "exe"
             url: "https://efulfillment.autodesk.com/NetSWDLD/2024/MAYA/42762096-E3FE-3521-9687-693E0B913A4F/SFX/Autodesk_Maya_2024_1_Update_Windows_64bit_dlm_001_002.sfx.exe"

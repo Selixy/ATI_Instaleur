@@ -17,7 +17,8 @@
       "WebFetch(domain:stackoverflow.com)",
       "Bash(\".venv\\Scripts\\python.exe\" test_no_selection_installed.py)",
       "Bash(findstr:*)",
-      "Bash(\".venv\\Scripts\\python.exe\" test_sans_winget_chocolatey.py)"
+      "Bash(\".venv\\Scripts\\python.exe\" test_sans_winget_chocolatey.py)",
+      "WebFetch(domain:forums.autodesk.com)"
     ],
     "deny": [],
     "ask": []
