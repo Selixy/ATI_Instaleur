@@ -1,7 +1,4 @@
-"""
-Boîte de dialogue pour configurer le chemin d'installation personnalisé.
-Module: ui.dialogs.custom_path_dialog
-"""
+"""Boîte de dialogue pour configurer le chemin d'installation personnalisé."""
 
 import os
 from PySide6.QtWidgets import (
@@ -50,9 +47,29 @@ class CustomInstallPathDialog(QDialog):
         title_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(title_label)
 
+        # Section chemin global
+        global_group = QGroupBox("Chemin d'installation global")
+        global_layout = QVBoxLayout(global_group)
 
-        # Section chemin global - recréation complète
-        self._create_path_section(layout)
+        # Checkbox pour activer/désactiver
+        self.enable_custom_path_checkbox = QCheckBox("Utiliser un chemin d'installation personnalisé")
+        self.enable_custom_path_checkbox.toggled.connect(self.on_checkbox_toggled)
+        global_layout.addWidget(self.enable_custom_path_checkbox)
+
+        # Sélection du chemin
+        path_layout = QHBoxLayout()
+        path_layout.addWidget(QLabel("Chemin de base :"))
+
+        self.path_edit = QLineEdit()
+        self.path_edit.setPlaceholderText("Ex: C:\\Logiciels\\")
+        path_layout.addWidget(self.path_edit)
+
+        self.browse_button = QPushButton("Parcourir...")
+        self.browse_button.clicked.connect(self.browse_path)
+        path_layout.addWidget(self.browse_button)
+
+        global_layout.addLayout(path_layout)
+        layout.addWidget(global_group)
 
         # Section information
         info_group = QGroupBox("Informations")
@@ -88,80 +105,6 @@ class CustomInstallPathDialog(QDialog):
 
         layout.addLayout(button_layout)
 
-        # Connecter les changements pour mise à jour en temps réel
-
-        # Mise à jour initiale de l'état
-        self._update_controls_state()
-
-    def _create_path_section(self, layout):
-        """Crée la section de configuration du chemin personnalisé."""
-        # Groupe principal
-        self.global_group = QGroupBox("Chemin d'installation global")
-        global_layout = QVBoxLayout(self.global_group)
-
-        # Checkbox d'activation
-        self.enable_custom_path_checkbox = QCheckBox("Utiliser un chemin d'installation personnalisé")
-        global_layout.addWidget(self.enable_custom_path_checkbox)
-
-        # Ligne de chemin
-        path_container = QWidget()
-        path_layout = QHBoxLayout(path_container)
-        path_layout.setContentsMargins(0, 0, 0, 0)
-
-        # Label
-        path_label = QLabel("Chemin de base :")
-        path_layout.addWidget(path_label)
-
-        # Champ de texte
-        self.path_edit = QLineEdit()
-        self.path_edit.setPlaceholderText("Ex: C:\\Logiciels\\")
-        path_layout.addWidget(self.path_edit)
-
-        # Bouton parcourir
-        self.browse_button = QPushButton("Parcourir...")
-        path_layout.addWidget(self.browse_button)
-
-        global_layout.addWidget(path_container)
-        layout.addWidget(self.global_group)
-
-        # Connecter les signaux après création
-        self._connect_signals()
-
-    def _connect_signals(self):
-        """Connecte tous les signaux."""
-        self.enable_custom_path_checkbox.stateChanged.connect(self._on_checkbox_changed)
-        self.browse_button.clicked.connect(self._on_browse_clicked)
-
-    def _on_checkbox_changed(self, state):
-        """Gère le changement d'état de la checkbox."""
-        self._update_controls_state()
-
-    def _on_browse_clicked(self):
-        """Gère le clic sur le bouton parcourir."""
-        QMessageBox.information(self, "Test", "Bouton Parcourir cliqué!")
-        self._browse_for_directory()
-
-    def _update_controls_state(self):
-        """Met à jour l'état des contrôles selon la checkbox."""
-        enabled = self.enable_custom_path_checkbox.isChecked()
-        self.path_edit.setEnabled(enabled)
-        self.browse_button.setEnabled(enabled)
-
-    def _browse_for_directory(self):
-        """Ouvre le sélecteur de dossier."""
-        current_path = self.path_edit.text().strip()
-        if not current_path or not os.path.exists(current_path):
-            current_path = os.path.expanduser("~")
-
-        selected_path = QFileDialog.getExistingDirectory(
-            self,
-            "Sélectionner le dossier d'installation",
-            current_path
-        )
-
-        if selected_path:
-            self.path_edit.setText(selected_path)
-
     def _get_excluded_apps(self):
         """Récupère dynamiquement la liste des applications qui n'utilisent pas le chemin personnalisé."""
         excluded_apps = []
@@ -186,8 +129,28 @@ class CustomInstallPathDialog(QDialog):
             self.enable_custom_path_checkbox.setChecked(False)
             self.path_edit.setText("")
 
-        # Mettre à jour l'état après le chargement
-        self._update_controls_state()
+        # Mettre à jour l'état initial
+        self.on_checkbox_toggled(self.enable_custom_path_checkbox.isChecked())
+
+    def on_checkbox_toggled(self, checked):
+        """Gère le changement d'état de la checkbox."""
+        self.path_edit.setEnabled(checked)
+        self.browse_button.setEnabled(checked)
+
+    def browse_path(self):
+        """Ouvre la boîte de dialogue pour sélectionner un dossier."""
+        current_path = self.path_edit.text()
+        if not current_path:
+            current_path = os.path.expanduser("~")
+
+        path = QFileDialog.getExistingDirectory(
+            self,
+            "Sélectionner le dossier d'installation de base",
+            current_path
+        )
+
+        if path:
+            self.path_edit.setText(path)
 
     def apply_settings(self):
         """Applique les paramètres et ferme la boîte de dialogue."""
@@ -218,7 +181,7 @@ class CustomInstallPathDialog(QDialog):
                     QMessageBox.critical(
                         self,
                         "Erreur de chemin",
-                        f"Impossible de créer ou d'accéder au dossier :\\n{path}\\n\\nErreur : {e}"
+                        f"Impossible de créer ou d'accéder au dossier :\n{path}\n\nErreur : {e}"
                     )
                     return
 
@@ -238,7 +201,7 @@ class CustomInstallPathDialog(QDialog):
             QMessageBox.information(
                 self,
                 "Configuration appliquée",
-                f"{message}\\n\\nLes prochaines installations utiliseront cette configuration."
+                f"{message}\n\nLes prochaines installations utiliseront cette configuration."
             )
 
             self.accept()
@@ -247,5 +210,5 @@ class CustomInstallPathDialog(QDialog):
             QMessageBox.critical(
                 self,
                 "Erreur",
-                f"Erreur lors de l'application des paramètres :\\n{e}"
+                f"Erreur lors de l'application des paramètres :\n{e}"
             )
