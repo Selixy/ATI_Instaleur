@@ -4,6 +4,7 @@ applications:
     category: "Utilitaires"
     icon: ""
     enabled: true
+    custom_install_path: true
     methods:
       - type: "exe"
         url: "https://sourceforge.net/projects/djv/files/djv-beta/2.0.8/DJV-2.0.8-win64.exe/download"

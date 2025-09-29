@@ -10,6 +10,7 @@ from typing import Optional
 from ..hook.base_installer import BaseInstaller
 from ..hook.status import InstallationResult, InstallationStatus, InstallationMethod
 from ..hook.progress import ProgressInfo
+from ..install_paths import get_install_path_manager
 
 
 class ExeInstaller(BaseInstaller):
@@ -74,6 +75,13 @@ class ExeInstaller(BaseInstaller):
         (comme les vrais installeurs !)
         """
         start_time = time.time()
+
+        # Gérer les chemins d'installation personnalisés
+        path_manager = get_install_path_manager()
+        app_config = kwargs.get('app_config')
+        custom_path_args = ""
+        if app_config:
+            custom_path_args = path_manager.get_install_arguments(package_name, app_config)
 
         # Si on annule, on s'arrête
         if self.is_cancelled:

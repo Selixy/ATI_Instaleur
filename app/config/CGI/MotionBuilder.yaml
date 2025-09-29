@@ -6,6 +6,7 @@ applications:
     enabled: true
     has_versions: true
     default_version_index: 4
+    custom_install_path: false
     versions:
       - name: "2026"
         version: "2026"

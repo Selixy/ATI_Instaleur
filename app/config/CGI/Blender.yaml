@@ -6,6 +6,7 @@ applications:
     enabled: true
     has_versions: true
     default_version_index: 0
+    custom_install_path: true
     versions:
       - name: "4.5 LTS (Recommandé)"
         version: "4.5.3"

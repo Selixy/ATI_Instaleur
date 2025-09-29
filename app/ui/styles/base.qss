@@ -384,3 +384,202 @@ QTextEdit {
     color: {{COLOR_TEXT}};
     font-size: 13px;
 }
+
+/* ===========================
+   BOÎTE DE DIALOGUE CHEMIN PERSONNALISÉ
+   =========================== */
+
+/* Titre de la boîte de dialogue */
+CustomInstallPathDialog QLabel {
+    color: {{COLOR_TEXT}};
+}
+
+/* Titre principal */
+CustomInstallPathDialog QLabel[objectName="titleLabel"] {
+    color: {{COLOR_TEXT}};
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* Texte d'information */
+CustomInstallPathDialog QGroupBox[title="Informations"] QLabel {
+    color: {{COLOR_TEXT}};
+    font-size: 11px;
+}
+
+/* GroupBox */
+CustomInstallPathDialog QGroupBox {
+    color: {{COLOR_TEXT}};
+    border: 2px solid {{COLOR_BORDER}};
+    border-radius: 5px;
+    margin-top: 1ex;
+    font-weight: bold;
+    padding-top: 20px;
+}
+
+CustomInstallPathDialog QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top left;
+    padding: 0 10px;
+    background-color: {{COLOR_BG}};
+}
+
+/* Checkbox */
+CustomInstallPathDialog QCheckBox {
+    color: {{COLOR_TEXT}};
+    font-size: 12px;
+}
+
+CustomInstallPathDialog QCheckBox::indicator {
+    width: 18px;
+    height: 18px;
+}
+
+/* LineEdit */
+CustomInstallPathDialog QLineEdit {
+    background-color: {{COLOR_BG}};
+    color: {{COLOR_TEXT}};
+    border: 2px solid {{COLOR_BORDER}};
+    border-radius: 4px;
+    padding: 8px;
+    font-size: 12px;
+}
+
+CustomInstallPathDialog QLineEdit:focus {
+    border-color: {{COLOR_TEXT_HOVER}};
+}
+
+CustomInstallPathDialog QLineEdit:disabled {
+    background-color: {{COLOR_TITLEBAR_BG}};
+    color: {{COLOR_TEXT_MUTED}};
+    border-color: {{COLOR_BORDER}};
+}
+
+/* Boutons */
+CustomInstallPathDialog QPushButton {
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-weight: 500;
+    background-color: {{COLOR_TITLEBAR_BORDER}};
+    color: {{COLOR_TEXT_HOVER}};
+}
+
+CustomInstallPathDialog QPushButton:hover {
+    background-color: {{COLOR_BTN_HOVER}};
+}
+
+CustomInstallPathDialog QPushButton:pressed {
+    background-color: {{COLOR_BTN_PRESSED}};
+}
+
+CustomInstallPathDialog QPushButton:disabled {
+    background-color: {{COLOR_TITLEBAR_BORDER}};
+    color: {{COLOR_TEXT}};
+}
+
+/* Bouton par défaut (Appliquer) */
+CustomInstallPathDialog QPushButton[default="true"] {
+    background-color: #0078d4;
+    color: {{COLOR_TEXT_HOVER}};
+}
+
+CustomInstallPathDialog QPushButton[default="true"]:hover {
+    background-color: {{COLOR_BTN_PRESSED}};
+}
+
+/* ===========================
+   BOÎTE DE DIALOGUE CHEMIN SIMPLE
+   =========================== */
+
+/* Copie des styles pour CustomInstallPathDialogSimple */
+CustomInstallPathDialogSimple QLabel {
+    color: {{COLOR_TEXT}};
+}
+
+CustomInstallPathDialogSimple QLabel[objectName="titleLabel"] {
+    color: {{COLOR_TEXT}};
+    font-size: 14px;
+    font-weight: bold;
+}
+
+CustomInstallPathDialogSimple QGroupBox[title="Informations"] QLabel {
+    color: {{COLOR_TEXT}};
+    font-size: 11px;
+}
+
+CustomInstallPathDialogSimple QGroupBox {
+    color: {{COLOR_TEXT}};
+    border: 2px solid {{COLOR_BORDER}};
+    border-radius: 5px;
+    margin-top: 1ex;
+    font-weight: bold;
+    padding-top: 20px;
+}
+
+CustomInstallPathDialogSimple QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top left;
+    padding: 0 10px;
+    background-color: {{COLOR_BG}};
+}
+
+CustomInstallPathDialogSimple QCheckBox {
+    color: {{COLOR_TEXT}};
+    font-size: 12px;
+}
+
+CustomInstallPathDialogSimple QCheckBox::indicator {
+    width: 18px;
+    height: 18px;
+}
+
+CustomInstallPathDialogSimple QLineEdit {
+    background-color: {{COLOR_BG}};
+    color: {{COLOR_TEXT}};
+    border: 2px solid {{COLOR_BORDER}};
+    border-radius: 4px;
+    padding: 8px;
+    font-size: 12px;
+}
+
+CustomInstallPathDialogSimple QLineEdit:focus {
+    border-color: {{COLOR_TEXT_HOVER}};
+}
+
+CustomInstallPathDialogSimple QLineEdit:disabled {
+    background-color: {{COLOR_TITLEBAR_BG}};
+    color: {{COLOR_TEXT_MUTED}};
+    border-color: {{COLOR_BORDER}};
+}
+
+CustomInstallPathDialogSimple QPushButton {
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-weight: 500;
+    background-color: {{COLOR_TITLEBAR_BORDER}};
+    color: {{COLOR_TEXT_HOVER}};
+}
+
+CustomInstallPathDialogSimple QPushButton:hover {
+    background-color: {{COLOR_BTN_HOVER}};
+}
+
+CustomInstallPathDialogSimple QPushButton:pressed {
+    background-color: {{COLOR_BTN_PRESSED}};
+}
+
+CustomInstallPathDialogSimple QPushButton:disabled {
+    background-color: {{COLOR_TITLEBAR_BORDER}};
+    color: {{COLOR_TEXT}};
+}
+
+CustomInstallPathDialogSimple QPushButton[default="true"] {
+    background-color: #0078d4;
+    color: {{COLOR_TEXT_HOVER}};
+}
+
+CustomInstallPathDialogSimple QPushButton[default="true"]:hover {
+    background-color: {{COLOR_BTN_PRESSED}};
+}

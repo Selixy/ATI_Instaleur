@@ -4,6 +4,7 @@ applications:
     category: "Graphisme"
     icon: ""
     enabled: true
+    custom_install_path: true
     methods:
       - type: "exe"
         url: "https://creativecloud.adobe.com/apps/download/creative-cloud"

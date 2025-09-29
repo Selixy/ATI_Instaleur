@@ -9,6 +9,8 @@
 {{COLOR_TEXT_HOVER}}: #000000;
 {{COLOR_BTN_HOVER}}: #e5e5e5;
 {{COLOR_BTN_PRESSED}}: #cce7ff;
+{{COLOR_BORDER}}: #cccccc;
+{{COLOR_TEXT_MUTED}}: #666666;
 
 /* Boutons Windows spécifiques */
 {{COLOR_WIN_BTN_NORMAL}}: transparent;

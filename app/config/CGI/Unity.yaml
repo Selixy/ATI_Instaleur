@@ -4,6 +4,7 @@ applications:
     category: "3D/Animation"
     icon: ""
     enabled: true
+    custom_install_path: false
     methods:
       - type: "exe"
         url: "https://public-cdn.cloud.unity3d.com/hub/prod/UnityHubSetup.exe"

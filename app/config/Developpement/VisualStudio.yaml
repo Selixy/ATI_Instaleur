@@ -4,6 +4,7 @@ applications:
     category: "Développement"
     icon: ""
     enabled: true
+    custom_install_path: true
     methods:
       - type: "exe"
         url: "https://aka.ms/vs/17/release/vs_Community.exe"

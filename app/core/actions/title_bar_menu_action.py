@@ -1,6 +1,20 @@
 # app/core/actions/title_bar_menu_action.py
 
-def on_home_click():
-    """Action exécutée quand on clique sur le bouton Accueil."""
-    print("Action: Retour à l'accueil")
+
+
+def on_custom_path_click():
+    """Action exécutée quand on clique sur le bouton de configuration du chemin personnalisé."""
+    from ui.dialogs.custom_path_dialog_simple import CustomInstallPathDialogSimple
+    from PySide6.QtWidgets import QApplication
+
+    # Récupérer la fenêtre principale comme parent
+    main_window = None
+    for widget in QApplication.allWidgets():
+        if hasattr(widget, 'setWindowTitle') and 'ATI Instaleur' in str(widget.windowTitle()):
+            main_window = widget
+            break
+
+    # Créer et afficher la boîte de dialogue de test
+    dialog = CustomInstallPathDialogSimple(main_window)
+    dialog.exec()
 

@@ -56,6 +56,7 @@ class Application:
     has_versions: bool = False
     versions: List[ApplicationVersion] = None
     default_version_index: int = 0
+    custom_install_path: bool = False
     source_file: str = ""
 
     def __post_init__(self):
