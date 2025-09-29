@@ -4,7 +4,7 @@
 
 def on_custom_path_click():
     """Action exécutée quand on clique sur le bouton de configuration du chemin personnalisé."""
-    from ui.dialogs.custom_path_dialog_simple import CustomInstallPathDialogSimple
+    from ui.dialogs.custom_path_dialog import CustomInstallPathDialog
     from PySide6.QtWidgets import QApplication
 
     # Récupérer la fenêtre principale comme parent
@@ -14,7 +14,7 @@ def on_custom_path_click():
             main_window = widget
             break
 
-    # Créer et afficher la boîte de dialogue de test
-    dialog = CustomInstallPathDialogSimple(main_window)
+    # Créer et afficher la boîte de dialogue
+    dialog = CustomInstallPathDialog(main_window)
     dialog.exec()
 
