@@ -8,8 +8,8 @@ _BASE_BUTTONS_CONFIG: List[ButtonConfig] = [
     {
         "text": "",
         "icon": "home.png",
-        "action": "on_home_click",
-        "tooltip": "Le bouton ne sert a rien",
+        "action": "on_custom_path_click",
+        "tooltip": "Configurer le chemin d'installation personnalisé",
         "tag": "home",
         "clickable": True
     },

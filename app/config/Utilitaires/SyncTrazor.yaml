@@ -4,6 +4,7 @@ applications:
     category: "Utilitaires"
     icon: ""
     enabled: true
+    custom_install_path: true
     methods:
       - type: "exe"
         url: "https://github.com/canton7/SyncTrayzor/releases/latest"

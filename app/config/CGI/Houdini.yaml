@@ -4,6 +4,7 @@ applications:
     category: "3D/Animation"
     icon: ""
     enabled: true
+    custom_install_path: true
     methods:
       # Houdini Launcher - gère automatiquement l'installation de Houdini
       - type: "exe"

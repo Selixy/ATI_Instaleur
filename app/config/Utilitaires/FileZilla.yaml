@@ -4,6 +4,7 @@ applications:
     category: "Utilitaires"
     icon: ""
     enabled: true
+    custom_install_path: true
     methods:
       - type: "exe"
         url: "https://download.filezilla-project.org/client/FileZilla_3.68.1_win64-setup.exe"

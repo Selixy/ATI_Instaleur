@@ -4,6 +4,7 @@ applications:
     category: "Utilitaires"
     icon: ""
     enabled: true
+    custom_install_path: true
     methods:
       - type: "exe"
         url: "https://github.com/microsoft/PowerToys/releases/download/v0.94.2/PowerToysSetup-0.94.2-x64.exe"

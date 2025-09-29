@@ -4,6 +4,7 @@ applications:
     category: "Communication"
     icon: ""
     enabled: true
+    custom_install_path: true
     methods:
       - type: "exe"
         url: "https://discord.com/api/downloads/distributions/app/installers/latest?channel=stable&platform=win&arch=x64"

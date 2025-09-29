@@ -4,6 +4,7 @@ applications:
     category: "Développement"
     icon: ""
     enabled: true
+    custom_install_path: true
     methods:
       - type: "exe"
         url: "https://github.com/git-for-windows/git/releases/latest/download/Git-2.47.1-64-bit.exe"

@@ -18,7 +18,10 @@
       "Bash(\".venv\\Scripts\\python.exe\" test_no_selection_installed.py)",
       "Bash(findstr:*)",
       "Bash(\".venv\\Scripts\\python.exe\" test_sans_winget_chocolatey.py)",
-      "WebFetch(domain:forums.autodesk.com)"
+      "WebFetch(domain:forums.autodesk.com)",
+      "Bash(\".venv\\Scripts\\python.exe\" test_custom_install_paths.py)",
+      "Bash(\".venv\\Scripts\\python.exe\" -c \"from app.ui.dialogs.custom_path_dialog import CustomInstallPathDialog; print(''Import OK'')\")",
+      "Bash(\".venv\\Scripts\\python.exe\" test_dialog.py)"
     ],
     "deny": [],
     "ask": []

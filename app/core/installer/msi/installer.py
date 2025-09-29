@@ -12,6 +12,7 @@ from ..hook.base_installer import BaseInstaller
 from ..hook.status import InstallationResult, InstallationStatus, InstallationMethod
 from ..hook.progress import ProgressInfo
 from ..windows_package_detector import get_windows_detector
+from ..install_paths import get_install_path_manager
 
 
 class MsiInstaller(BaseInstaller):
@@ -83,6 +84,13 @@ class MsiInstaller(BaseInstaller):
         """
         start_time = time.time()
 
+        # Gérer les chemins d'installation personnalisés
+        path_manager = get_install_path_manager()
+        app_config = kwargs.get('app_config')
+        custom_path_args = ""
+        if app_config:
+            custom_path_args = path_manager.get_install_arguments(package_name, app_config)
+
         # Si on annule, on s'arrête
         if self.is_cancelled:
             return InstallationResult(
@@ -134,10 +142,15 @@ class MsiInstaller(BaseInstaller):
         if self.progress_tracker.callback:
             self.progress_tracker.callback(progress_info)
 
+        # Afficher le chemin d'installation si personnalisé
+        install_location_msg = "📁 Création des dossiers d'installation..."
+        if custom_path_args:
+            install_location_msg = f"📁 Installation vers répertoire personnalisé..."
+
         # Simulation de l'installation MSI avec étapes Windows
         stages = [
             (30, "📋 Lecture des informations du package..."),
-            (40, "📁 Création des dossiers d'installation..."),
+            (40, install_location_msg),
             (50, "📄 Copie des fichiers..."),
             (65, "📝 Écriture dans le registre Windows..."),
             (75, "🔧 Configuration des composants..."),

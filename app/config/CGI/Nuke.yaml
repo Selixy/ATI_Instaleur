@@ -4,6 +4,7 @@ applications:
     category: "3D/Animation"
     icon: ""
     enabled: true
+    custom_install_path: true
     methods:
       - type: "exe"
         url: "https://www.foundry.com/products/nuke/download"
@@ -16,6 +17,7 @@ applications:
     category: "3D/Animation"
     icon: ""
     enabled: true
+    custom_install_path: true
     methods:
       - type: "exe"
         url: "https://www.foundry.com/products/nuke/download"
