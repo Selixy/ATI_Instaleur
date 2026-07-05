@@ -3,11 +3,11 @@ applications:
     description: "Logiciel de texturing 3D"
     category: "3D/Animation"
     icon: ""
-    enabled: true
     custom_install_path: true
+    custom_path_format: "/D={path}"
     methods:
       - type: "exe"
-        url: "https://www.foundry.com/products/mari/download"
+        local_exe: "Mari/Mari7.0v2-win-x86-release-64.exe"
         silent_args: "/S"
         priority: 1
-        note: "Installeur exe avec installation silencieuse"
+        note: "Utilise installateur local - placez Mari_installer.exe dans app/installers/"

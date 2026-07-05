@@ -252,6 +252,14 @@ class YamlLoader:
             if 'silent_args' in method_data:
                 method.extra_args['silent_args'] = method_data['silent_args']
 
+            # Ajouter local_exe comme extra_args pour compatibilité
+            if 'local_exe' in method_data:
+                method.extra_args['local_exe'] = method_data['local_exe']
+
+            # Ajouter local_msi comme extra_args pour compatibilité
+            if 'local_msi' in method_data:
+                method.extra_args['local_msi'] = method_data['local_msi']
+
             methods.append(method)
         return methods
 
@@ -297,6 +305,7 @@ class YamlLoader:
                     has_versions=has_versions,
                     versions=versions,
                     default_version_index=app_data.get('default_version_index', 0),
+                    custom_install_path=app_data.get('custom_install_path', False),
                     source_file=str(yaml_file)
                 )
 

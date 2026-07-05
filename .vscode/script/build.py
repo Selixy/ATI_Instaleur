@@ -1,5 +1,9 @@
-import shutil, subprocess, sys
+import shutil, subprocess, sys, os, stat, time
 from pathlib import Path
+
+# Forcer l'encodage UTF-8 pour la sortie console
+if sys.platform == 'win32':
+    sys.stdout.reconfigure(encoding='utf-8')
 
 ROOT = Path(__file__).resolve().parents[2]
 SPEC = ROOT / "ATI_Instaleur.spec"
@@ -115,59 +119,53 @@ def test_build(exe_dir):
     
     return True
 
-def create_test_script(exe_dir):
-    """Crée un script de test simple pour l'exécutable."""
-    test_script = exe_dir / "test_app.py"
-    
-    test_content = '''#!/usr/bin/env python3
-"""Script de test pour l'exécutable."""
 
-import sys
-from pathlib import Path
-
-# Ajouter le dossier _internal au path si nécessaire
-internal_path = Path(__file__).parent / "_internal"
-if internal_path.exists():
-    sys.path.insert(0, str(internal_path))
-
-try:
-    from core.YamlLoader import get_config_loader
-    
-    print("Test du chargement de configuration...")
-    config = get_config_loader()
-    apps = config.get_all_applications()
-    
-    print(f"✅ Configuration chargée: {len(apps)} applications")
-    
-    if apps:
-        print("Premières applications:")
-        for app in apps[:3]:
-            print(f"  - {app.name}")
-        
-except Exception as e:
-    print(f"❌ Erreur: {e}")
-    import traceback
-    traceback.print_exc()
-'''
     
     with open(test_script, 'w', encoding='utf-8') as f:
         f.write(test_content)
     
     print(f"✓ Script de test créé: {test_script}")
 
+def remove_readonly(func, path, excinfo):
+    """Gestionnaire d'erreur pour supprimer les fichiers en lecture seule."""
+    os.chmod(path, stat.S_IWRITE)
+    func(path)
+
+def safe_rmtree(path, max_attempts=3, delay=0.5):
+    """Supprime un dossier de manière robuste avec gestion des erreurs Windows."""
+    for attempt in range(max_attempts):
+        try:
+            if path.exists():
+                shutil.rmtree(path, onerror=remove_readonly)
+                return True
+        except PermissionError as e:
+            if attempt < max_attempts - 1:
+                print(f"⚠️ Tentative {attempt + 1}/{max_attempts}: fichiers verrouillés, nouvelle tentative...")
+                time.sleep(delay)
+            else:
+                print(f"⚠️ Impossible de nettoyer complètement: {e}")
+                print("   Le build va continuer avec --clean pour forcer le nettoyage")
+                return False
+        except Exception as e:
+            print(f"⚠️ Erreur lors du nettoyage: {e}")
+            return False
+    return False
+
 def main():
     print("=== BUILD ATI_INSTALEUR ===")
-    
+
     # 1. Vérification pré-build
     if not check_resources():
         print("\n❌ Arrêt du build - ressources manquantes")
         sys.exit(1)
-    
+
     # 2. Nettoyage
     print(f"\nNettoyage du dossier de build...")
     if OUT.exists():
-        shutil.rmtree(OUT)
-        print("✓ Dossier de build nettoyé")
+        if safe_rmtree(OUT):
+            print("✓ Dossier de build nettoyé")
+        else:
+            print("✓ Nettoyage partiel - PyInstaller --clean va finaliser")
     
     # 3. Build PyInstaller
     print(f"\nLancement de PyInstaller...")
@@ -196,9 +194,7 @@ def main():
     # 5. Test du build
     exe_dir = distpath / "ATI_Instaleur"
     if exe_dir.exists():
-        test_build(exe_dir)
-        create_test_script(exe_dir)
-        
+        test_build(exe_dir)        
         print(f"\n🎉 Build terminé avec succès!")
         print(f"📁 Dossier: {exe_dir}")
         print(f"🚀 Exécutable: {exe_dir / 'ATI_Instaleur.exe'}")

@@ -9,6 +9,7 @@ import time
 from .hook.status import InstallationResult, InstallationStatus, InstallationMethod
 from .hook.progress import ProgressTracker, ProgressInfo
 from . import simulation
+from ..YamlLoader import get_yaml_loader
 
 # Imports sécurisés des installateurs
 try:
@@ -246,9 +247,46 @@ class MainInstaller:
                 )
                 continue
 
+            # Récupérer la configuration de l'application
+            yaml_loader = get_yaml_loader()
+            app = yaml_loader.get_application_by_name(package_name)
+
+            # Convertir l'application en dictionnaire pour compatibilité
+            app_config = None
+            if app:
+                app_config = {
+                    'name': app.name,
+                    'custom_install_path': app.custom_install_path,
+                    'methods': []
+                }
+
+                # Déterminer les méthodes à utiliser
+                methods_to_use = []
+                if app.has_versions:
+                    # Pour les apps avec versions, utiliser la version par défaut
+                    default_version = app.get_default_version()
+                    if default_version:
+                        methods_to_use = default_version.methods
+                else:
+                    # Pour les apps sans versions, utiliser les méthodes directes
+                    methods_to_use = app.methods
+
+                # Convertir les méthodes
+                for method in methods_to_use:
+                    method_dict = {
+                        'type': method.type,
+                        'package': method.package,
+                        'url': method.url,
+                        'priority': method.priority
+                    }
+                    # Ajouter les extra_args (comme silent_args, local_exe, local_msi)
+                    method_dict.update(method.extra_args)
+
+                    app_config['methods'].append(method_dict)
+
             # Essayer l'installation (avec protection)
             try:
-                result = installer.install_package(package_name, **kwargs)
+                result = installer.install_package(package_name, app_config=app_config, **kwargs)
             except Exception as e:
                 # Si l'installation plante, créer un résultat d'erreur et continuer
                 result = InstallationResult(

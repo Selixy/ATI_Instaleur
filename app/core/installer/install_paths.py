@@ -69,7 +69,7 @@ class InstallPathManager:
             str: Arguments d'installation additionnels
         """
         # Vérifier si l'application autorise les chemins personnalisés
-        if not getattr(app_config, 'custom_install_path', False):
+        if not app_config.get('custom_install_path', False):
             return ""
 
         # Obtenir le chemin personnalisé
@@ -77,8 +77,9 @@ class InstallPathManager:
         if not install_path:
             return ""
 
-        # Générer les arguments selon le type d'installateur
-        return self._generate_path_arguments(install_path)
+        # Générer les arguments selon le type d'installateur et le format personnalisé
+        custom_format = app_config.get('custom_path_format', None)
+        return self._generate_path_arguments(install_path, custom_format)
 
     def _get_effective_install_path(self, app_name: str) -> Optional[str]:
         """Obtient le chemin d'installation effectif pour une application."""
@@ -92,22 +93,29 @@ class InstallPathManager:
 
         return None
 
-    def _generate_path_arguments(self, install_path: str) -> str:
+    def _generate_path_arguments(self, install_path: str, custom_format: Optional[str] = None) -> str:
         """
         Génère les arguments d'installation pour un chemin donné.
 
         Args:
             install_path: Chemin d'installation
+            custom_format: Format personnalisé pour le chemin (ex: "/D={path}", "INSTALLDIR={path}")
 
         Returns:
             str: Arguments d'installation
         """
+        # Si aucun chemin n'est défini, ne rien retourner
+        if not install_path:
+            return ""
+
         # S'assurer que le répertoire existe
         os.makedirs(install_path, exist_ok=True)
 
-        # Arguments communs pour les installateurs Windows
-        # MSI: INSTALLDIR="path"
-        # EXE: dépend de l'installateur, souvent --install-path ou --destination
+        # Si un format personnalisé est fourni, l'utiliser
+        if custom_format:
+            return custom_format.replace('{path}', install_path)
+
+        # Sinon, utiliser le format par défaut pour MSI
         return f'INSTALLDIR="{install_path}"'
 
 

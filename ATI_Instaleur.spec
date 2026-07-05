@@ -36,9 +36,9 @@ def collect_app_data():
                 yaml_count += 1
 
     if yaml_count > 0:
-        print(f"✓ Configuration YAML: {yaml_count} fichiers inclus")
+        print(f"Configuration YAML: {yaml_count} fichiers inclus")
     else:
-        print("❌ ERREUR: Aucun fichier YAML trouvé dans app/config/")
+        print("ERREUR: Aucun fichier YAML trouvé dans app/config/")
         sys.exit(1)
     
     # 2. Styles QSS - CORRECTION IMPORTANTE
@@ -59,12 +59,27 @@ def collect_app_data():
                     target_path = f"{target_dir}/{rel_path.parent}"
                 
                 datas.append((str(qss_file), target_path))
-                print(f"✓ Style: {qss_file} -> {target_path}")
+                print(f"Style: {qss_file} -> {target_path}")
                 total_qss_files += 1
     
-    print(f"✓ Total styles QSS: {total_qss_files} fichiers")
-    
-    # 3. Icônes
+    print(f"Total styles QSS: {total_qss_files} fichiers")
+
+    # 3. Installateurs locaux (fichiers .exe/.msi)
+    installers_dir = PROJECT_ROOT / "installers"
+    installer_count = 0
+    if installers_dir.exists():
+        for installer_file in installers_dir.rglob("*"):
+            if installer_file.is_file() and installer_file.suffix.lower() in ['.exe', '.msi']:
+                rel_path = installer_file.relative_to(installers_dir)
+                target_path = f"installers/{rel_path.parent}" if rel_path.parent.name else "installers"
+                datas.append((str(installer_file), target_path))
+                installer_count += 1
+                print(f"Installateur: {rel_path}")
+        print(f"Total installateurs: {installer_count} fichiers")
+    else:
+        print("Répertoire installers/ non trouvé - pas d'installateurs locaux")
+
+    # 4. Icônes
     icons_dir = APP_DIR / "ui" / "icons"
     icon_count = 0
     if icons_dir.exists():
@@ -73,7 +88,7 @@ def collect_app_data():
                 rel_path = icon_file.relative_to(APP_DIR)
                 datas.append((str(icon_file), str(rel_path.parent)))
                 icon_count += 1
-        print(f"✓ Icônes: {icon_count} fichiers")
+        print(f"Icônes: {icon_count} fichiers")
     
     return datas
 
@@ -138,7 +153,7 @@ datas = collect_app_data()
 app_icon = APP_DIR / "ui" / "icons" / "app.ico"
 icon_path = str(app_icon) if app_icon.exists() else None
 if not icon_path:
-    print("⚠️ app.ico non trouvé, pas d'icône pour l'exécutable")
+    print("app.ico non trouvé, pas d'icône pour l'exécutable")
 
 # Configuration Analysis
 a = Analysis(

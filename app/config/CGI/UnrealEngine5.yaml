@@ -3,11 +3,11 @@ applications:
     description: "Moteur de jeu et de création 3D (version 5.3.4)"
     category: "3D/Animation"
     icon: ""
-    enabled: true
+    enabled: false  # Désactivé - URL non directe
     custom_install_path: true
     methods:
       - type: "msi"
         url: "https://www.epicgames.com/store/en-US/download"
         silent_args: "/quiet /norestart"
         priority: 1
-        note: "Installe Epic Games Launcher qui gère ensuite l'installation d'Unreal Engine"
+        note: "URL non directe - nécessite téléchargement via Epic Games Launcher"
