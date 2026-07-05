@@ -71,15 +71,22 @@ class InstallerThread(QThread):
             # Vérifier la compatibilité du système
             compatibility = self.installer.check_system_compatibility()
             available_methods = [method for method, result in compatibility.items() if result.is_success]
-            
+
             if not available_methods:
                 self.update_log.emit("Aucune méthode d'installation disponible sur ce système")
                 self.finished.emit()
                 return
-            
+
             # Afficher les méthodes disponibles
-            method_names = [method.value for method in available_methods]
-            self.update_log.emit(f"Méthodes disponibles: {', '.join(method_names)}")
+            method_names = []
+            for method in available_methods:
+                if hasattr(method, 'value'):
+                    method_names.append(method.value)
+                else:
+                    method_names.append(str(method))
+
+            if method_names:
+                self.update_log.emit(f"Méthodes disponibles: {', '.join(method_names)}")
             
             # Résoudre les applications avec leurs méthodes d'installation appropriées
             apps_to_install_with_methods = self._resolve_apps_with_methods()
@@ -151,7 +158,15 @@ class InstallerThread(QThread):
                 continue
 
             # Trouver la méthode préférée disponible
-            preferred_method = app.get_preferred_method()
+            preferred_method = None
+            if app.has_versions:
+                # Pour les apps avec versions, utiliser la version par défaut
+                default_version = app.get_default_version()
+                if default_version and default_version.methods:
+                    preferred_method = min(default_version.methods, key=lambda x: x.priority)
+            else:
+                # Pour les apps sans versions, utiliser get_preferred_method()
+                preferred_method = app.get_preferred_method()
 
             if not preferred_method:
                 self.update_log.emit(f"⚠️ {app_name} - Aucune méthode d'installation configurée")

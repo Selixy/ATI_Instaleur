@@ -1,12 +1,15 @@
 """
-Installateur MSI avec détection réelle et simulation.
+Installateur MSI réel.
 Module: core.installer.msi.installer
 """
 
+import sys
 import time
-import random
 import platform
+import requests
+from pathlib import Path
 from typing import Optional
+from urllib.parse import urlparse
 
 from ..hook.base_installer import BaseInstaller
 from ..hook.status import InstallationResult, InstallationStatus, InstallationMethod
@@ -16,7 +19,7 @@ from ..install_paths import get_install_path_manager
 
 
 class MsiInstaller(BaseInstaller):
-    """Installateur MSI avec simulation adorable."""
+    """Installateur MSI réel."""
 
     def __init__(self):
         super().__init__(InstallationMethod.MSI)
@@ -78,127 +81,231 @@ class MsiInstaller(BaseInstaller):
             )
 
     def install_package(self, package_name: str, force_reinstall: bool = False, **kwargs) -> InstallationResult:
-        """
-        SIMULATION MIGNONNE D'UNE INSTALLATION MSI
-        (avec l'interface Windows!)
-        """
+        """Installation réelle d'un package MSI - télécharge ou copie uniquement le .msi."""
+        import shutil
         start_time = time.time()
 
-        # Gérer les chemins d'installation personnalisés
-        path_manager = get_install_path_manager()
+        # Récupérer les informations de l'application
         app_config = kwargs.get('app_config')
-        custom_path_args = ""
-        if app_config:
-            custom_path_args = path_manager.get_install_arguments(package_name, app_config)
-
-        # Si on annule, on s'arrête
-        if self.is_cancelled:
+        if not app_config:
             return InstallationResult(
-                status=InstallationStatus.CANCELLED,
-                message="Installation MSI annulée",
+                status=InstallationStatus.FAILED,
+                message=f"Configuration de l'application '{package_name}' manquante",
                 package_name=package_name,
                 method=self.method
             )
 
-        # On dit qu'on commence
+        # Trouver la méthode MSI dans la configuration
+        msi_method = None
+        for method in app_config.get('methods', []):
+            if method.get('type') == 'msi':
+                msi_method = method
+                break
+
+        if not msi_method:
+            return InstallationResult(
+                status=InstallationStatus.FAILED,
+                message=f"Aucune méthode MSI trouvée pour '{package_name}'",
+                package_name=package_name,
+                method=self.method
+            )
+
+        download_url = msi_method.get('url')
+        local_msi = msi_method.get('local_msi', None)
+
+        # Vérifier qu'on a au moins une source
+        if not download_url and not local_msi:
+            return InstallationResult(
+                status=InstallationStatus.FAILED,
+                message=f"URL de téléchargement et fichier local manquants pour '{package_name}'",
+                package_name=package_name,
+                method=self.method
+            )
+
+        # Gérer les chemins d'installation personnalisés
+        path_manager = get_install_path_manager()
+        custom_install_path = None
+        if app_config.get('custom_install_path', False):
+            custom_install_path = path_manager.get_custom_path(package_name)
+
+        # Démarrer l'installation
         self.progress_tracker.start_package(package_name)
 
-        # Début de l'installation MSI
-        progress_info = ProgressInfo(
-            current_progress=0,
-            global_progress=self._calculate_global_progress(0),
-            message=f"📦 Lancement de l'installation MSI de {package_name}...",
-            package_name=package_name,
-            current_step="Préparation de l'installeur MSI..."
-        )
+        try:
+            # Cas 1: Fichier local - on copie
+            if local_msi:
+                if self.is_cancelled:
+                    return self._make_cancelled_result(package_name, start_time)
+
+                self._update_progress(10, f"📁 Recherche de l'installateur local pour {package_name}...", package_name)
+
+                local_installer_path = self._find_local_installer_path(local_msi)
+                if not local_installer_path or not local_installer_path.exists():
+                    return InstallationResult(
+                        status=InstallationStatus.FAILED,
+                        message=f"Installateur local non trouvé : {local_msi}",
+                        package_name=package_name,
+                        method=self.method
+                    )
+
+                self._update_progress(30, f"📋 Copie de l'installateur local...", package_name)
+
+                # Déterminer le répertoire de destination
+                if custom_install_path:
+                    destination_dir = Path(custom_install_path)
+                else:
+                    destination_dir = Path.home() / "Desktop"
+
+                destination_dir.mkdir(parents=True, exist_ok=True)
+                destination_file = destination_dir / local_installer_path.name
+
+                # Copier le fichier
+                shutil.copy2(local_installer_path, destination_file)
+
+                self._update_progress(100, f"✅ {package_name} copié avec succès vers {destination_file}", package_name)
+
+                return InstallationResult(
+                    status=InstallationStatus.SUCCESS,
+                    message=f"{package_name} copié vers {destination_file}",
+                    package_name=package_name,
+                    method=self.method,
+                    execution_time=time.time() - start_time
+                )
+
+            # Cas 2: URL - on télécharge
+            else:
+                if self.is_cancelled:
+                    return self._make_cancelled_result(package_name, start_time)
+
+                self._update_progress(5, f"📥 Téléchargement de {package_name}...", package_name)
+                msi_file_path = self._download_msi_to_destination(download_url, package_name, custom_install_path)
+
+                if not msi_file_path:
+                    return InstallationResult(
+                        status=InstallationStatus.FAILED,
+                        message=f"Échec du téléchargement de '{package_name}'",
+                        package_name=package_name,
+                        method=self.method
+                    )
+
+                if self.is_cancelled:
+                    return self._make_cancelled_result(package_name, start_time)
+
+                self._update_progress(100, f"✅ {package_name} téléchargé avec succès vers {msi_file_path}", package_name)
+
+                return InstallationResult(
+                    status=InstallationStatus.SUCCESS,
+                    message=f"{package_name} téléchargé vers {msi_file_path}",
+                    package_name=package_name,
+                    method=self.method,
+                    execution_time=time.time() - start_time
+                )
+
+        except Exception as e:
+            return InstallationResult(
+                status=InstallationStatus.FAILED,
+                message=f"Erreur lors du traitement de '{package_name}': {str(e)}",
+                package_name=package_name,
+                method=self.method,
+                execution_time=time.time() - start_time
+            )
+
+    def _find_local_installer_path(self, local_msi: str) -> Optional[Path]:
+        """
+        Trouve le chemin vers l'installateur local.
+        Gère les modes développement et build (PyInstaller).
+        """
+        is_frozen = getattr(sys, 'frozen', False)
+
+        if is_frozen:
+            # Mode PyInstaller - les fichiers sont dans le répertoire de l'exécutable
+            exe_dir = Path(sys.executable).parent
+            candidates = [
+                exe_dir / "_internal" / "installers" / local_msi,  # PyInstaller onedir
+                exe_dir / "installers" / local_msi,
+                exe_dir / local_msi
+            ]
+
+            # Essayer aussi _MEIPASS pour les fichiers intégrés
+            if hasattr(sys, '_MEIPASS'):
+                meipass = Path(sys._MEIPASS)
+                candidates.extend([
+                    meipass / "installers" / local_msi,
+                    meipass / local_msi
+                ])
+        else:
+            # Mode développement - partir du fichier actuel vers la racine du projet
+            current_file = Path(__file__).resolve()
+            project_root = current_file.parent.parent.parent.parent.parent
+            candidates = [
+                project_root / "installers" / local_msi
+            ]
+
+        # Tester chaque candidat
+        for candidate in candidates:
+            if candidate.exists():
+                return candidate
+
+        return None
+
+    def _download_msi_to_destination(self, url: str, package_name: str, custom_path: Optional[str] = None) -> Optional[Path]:
+        """Télécharge l'installateur MSI sur le Bureau ou dans le répertoire spécifié."""
+        try:
+            # Déterminer le répertoire de destination
+            if custom_path:
+                destination_dir = Path(custom_path)
+            else:
+                # Bureau par défaut
+                destination_dir = Path.home() / "Desktop"
+
+            # Créer le répertoire si nécessaire
+            destination_dir.mkdir(parents=True, exist_ok=True)
+
+            # Déterminer le nom du fichier
+            parsed_url = urlparse(url)
+            filename = Path(parsed_url.path).name
+            if not filename or not filename.endswith('.msi'):
+                filename = f"{package_name}_installer.msi"
+
+            msi_path = destination_dir / filename
+
+            # Télécharger le fichier
+            response = requests.get(url, stream=True, timeout=30)
+            response.raise_for_status()
+
+            total_size = int(response.headers.get('content-length', 0))
+            downloaded = 0
+
+            with open(msi_path, 'wb') as f:
+                for chunk in response.iter_content(chunk_size=8192):
+                    if self.is_cancelled:
+                        return None
+
+                    f.write(chunk)
+                    downloaded += len(chunk)
+
+                    # Mettre à jour la progression du téléchargement (5% à 100%)
+                    if total_size > 0:
+                        progress = 5 + int((downloaded / total_size) * 95)
+                        self._update_progress(progress, f"📥 Téléchargement de {package_name}... ({downloaded // 1024}KB/{total_size // 1024}KB)", package_name)
+
+            return msi_path
+
+        except Exception as e:
+            print(f"Erreur lors du téléchargement: {e}")
+            return None
+
+    def _update_progress(self, progress: int, message: str, package_name: str):
+        """Met à jour la progression."""
         if self.progress_tracker.callback:
-            self.progress_tracker.callback(progress_info)
-
-        # Étape 1: Validation du fichier MSI
-        time.sleep(0.5)
-        if self.is_cancelled: return self._make_cancelled_result(package_name, start_time)
-
-        progress_info = ProgressInfo(
-            current_progress=10,
-            global_progress=self._calculate_global_progress(10),
-            message=f"🔒 Validation du fichier MSI de {package_name}...",
-            package_name=package_name,
-            current_step="Vérification de la signature..."
-        )
-        if self.progress_tracker.callback:
-            self.progress_tracker.callback(progress_info)
-
-        # Étape 2: Interface Windows
-        time.sleep(0.4)
-        if self.is_cancelled: return self._make_cancelled_result(package_name, start_time)
-
-        progress_info = ProgressInfo(
-            current_progress=20,
-            global_progress=self._calculate_global_progress(20),
-            message=f"🪟 Ouverture de l'interface Windows Installer...",
-            package_name=package_name,
-            current_step="Chargement de l'assistant d'installation..."
-        )
-        if self.progress_tracker.callback:
-            self.progress_tracker.callback(progress_info)
-
-        # Afficher le chemin d'installation si personnalisé
-        install_location_msg = "📁 Création des dossiers d'installation..."
-        if custom_path_args:
-            install_location_msg = f"📁 Installation vers répertoire personnalisé..."
-
-        # Simulation de l'installation MSI avec étapes Windows
-        stages = [
-            (30, "📋 Lecture des informations du package..."),
-            (40, install_location_msg),
-            (50, "📄 Copie des fichiers..."),
-            (65, "📝 Écriture dans le registre Windows..."),
-            (75, "🔧 Configuration des composants..."),
-            (85, "⚙️ Installation des services..."),
-            (92, "🔗 Création des raccourcis..."),
-            (97, "✅ Finalisation de l'installation...")
-        ]
-
-        for progress, step_msg in stages:
-            if self.is_cancelled: return self._make_cancelled_result(package_name, start_time)
-
-            # Temps variable selon l'étape
-            time.sleep(random.uniform(0.3, 0.7))
-
             progress_info = ProgressInfo(
                 current_progress=progress,
                 global_progress=self._calculate_global_progress(progress),
-                message=step_msg,
+                message=message,
                 package_name=package_name,
-                current_step=step_msg.replace("📋 ", "").replace("📁 ", "").replace("📄 ", "")
-                             .replace("📝 ", "").replace("🔧 ", "").replace("⚙️ ", "")
-                             .replace("🔗 ", "").replace("✅ ", "")
+                current_step=message
             )
-            if self.progress_tracker.callback:
-                self.progress_tracker.callback(progress_info)
-
-        # Fin de l'installation
-        time.sleep(0.3)
-        if self.is_cancelled: return self._make_cancelled_result(package_name, start_time)
-
-        progress_info = ProgressInfo(
-            current_progress=100,
-            global_progress=self._calculate_global_progress(100),
-            message=f"🎉 {package_name} installé avec succès via MSI !",
-            package_name=package_name,
-            current_step="Installation MSI terminée !"
-        )
-        if self.progress_tracker.callback:
             self.progress_tracker.callback(progress_info)
-
-        # Résultat final
-        return InstallationResult(
-            status=InstallationStatus.SUCCESS,
-            message=f"Excellent ! {package_name} installé via Windows Installer !",
-            package_name=package_name,
-            method=self.method,
-            execution_time=time.time() - start_time
-        )
 
     def _make_cancelled_result(self, package_name: str, start_time: float) -> InstallationResult:
         """Helper pour quand on annule"""

@@ -23,3 +23,10 @@ uv.lock
 
 # Ignorer les builds
 build/
+
+# Ignorer les installateurs locaux (fichiers volumineux)
+installers/*.exe
+installers/*.msi
+installers/*.zip
+installers/*.dmg
+!app/installers/README.md

@@ -9,7 +9,7 @@ uv sync
 # Lancer PyInstaller
 uv run python .vscode/script/build.py
 if ($LASTEXITCODE -ne 0) {
-    Write-Error "[ERREUR] Build échoué avec code $LASTEXITCODE"
+    Write-Error "[ERREUR] Build failed with code $LASTEXITCODE"
     exit $LASTEXITCODE
 }
 

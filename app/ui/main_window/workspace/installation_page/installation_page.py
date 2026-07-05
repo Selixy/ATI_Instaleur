@@ -7,6 +7,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QFont
 from ui.threads.installer_thread import InstallerThread
+from utils.admin_elevation import is_admin
 from datetime import datetime
 
 
@@ -147,6 +148,16 @@ class InstallationPage(QWidget):
         self.global_percent_label.setText("0%")
         self.current_percent_label.setText("0%")
         self.subtitle_label.setText(f"Installation de {len(apps_to_install)} applications")
+
+        # Demander l'élévation administrative via UAC Windows native
+        if not is_admin():
+            from utils.admin_elevation import request_admin_elevation
+            if not request_admin_elevation():
+                self.update_log("Installation annulée - privilèges administrateur refusés")
+                return
+            self.update_log("Privilèges administrateur accordés")
+        else:
+            self.update_log("Privilèges administrateur déjà actifs")
 
         # Afficher le nom de la première application au lieu de "Préparation..."
         if apps_to_install:

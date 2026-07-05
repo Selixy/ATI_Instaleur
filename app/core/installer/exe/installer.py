@@ -1,11 +1,13 @@
 """
-Installateur EXE avec simulation mignonne.
+Installateur EXE réel.
 Module: core.installer.exe.installer
 """
 
-import time
-import random
+import sys
+import requests
+from pathlib import Path
 from typing import Optional
+from urllib.parse import urlparse
 
 from ..hook.base_installer import BaseInstaller
 from ..hook.status import InstallationResult, InstallationStatus, InstallationMethod
@@ -14,7 +16,7 @@ from ..install_paths import get_install_path_manager
 
 
 class ExeInstaller(BaseInstaller):
-    """Installateur EXE avec simulation adorable."""
+    """Installateur EXE réel."""
 
     def __init__(self):
         super().__init__(InstallationMethod.EXE)
@@ -70,127 +72,234 @@ class ExeInstaller(BaseInstaller):
             )
 
     def install_package(self, package_name: str, force_reinstall: bool = False, **kwargs) -> InstallationResult:
-        """
-        SIMULATION ADORABLE D'UNE INSTALLATION EXE
-        (comme les vrais installeurs !)
-        """
+        """Installation réelle d'un package EXE - télécharge ou copie uniquement le .exe."""
+        import time
+        import shutil
+        import sys
         start_time = time.time()
 
-        # Gérer les chemins d'installation personnalisés
-        path_manager = get_install_path_manager()
+        # Récupérer les informations de l'application
         app_config = kwargs.get('app_config')
-        custom_path_args = ""
-        if app_config:
-            custom_path_args = path_manager.get_install_arguments(package_name, app_config)
-
-        # Si on annule, on s'arrête
-        if self.is_cancelled:
+        if not app_config:
             return InstallationResult(
-                status=InstallationStatus.CANCELLED,
-                message="Installation EXE annulée",
+                status=InstallationStatus.FAILED,
+                message=f"Configuration de l'application '{package_name}' manquante",
                 package_name=package_name,
                 method=self.method
             )
 
-        # On dit qu'on commence
+        # Trouver la méthode EXE dans la configuration
+        exe_method = None
+        for method in app_config.get('methods', []):
+            if method.get('type') == 'exe':
+                exe_method = method
+                break
+
+        if not exe_method:
+            return InstallationResult(
+                status=InstallationStatus.FAILED,
+                message=f"Aucune méthode EXE trouvée pour '{package_name}'",
+                package_name=package_name,
+                method=self.method
+            )
+
+        download_url = exe_method.get('url')
+        local_exe = exe_method.get('local_exe', None)
+
+        # Vérifier qu'on a au moins une source
+        if not download_url and not local_exe:
+            return InstallationResult(
+                status=InstallationStatus.FAILED,
+                message=f"URL de téléchargement et fichier local manquants pour '{package_name}'",
+                package_name=package_name,
+                method=self.method
+            )
+
+        # Gérer les chemins d'installation personnalisés
+        path_manager = get_install_path_manager()
+        custom_install_path = None
+        if app_config.get('custom_install_path', False):
+            custom_install_path = path_manager.get_custom_path(package_name)
+
+        # Démarrer l'installation
         self.progress_tracker.start_package(package_name)
 
-        # Début de l'installation EXE
-        progress_info = ProgressInfo(
-            current_progress=0,
-            global_progress=self._calculate_global_progress(0),
-            message=f"🔧 Lancement de l'installeur de {package_name}...",
-            package_name=package_name,
-            current_step="Démarrage de l'installeur..."
-        )
-        if self.progress_tracker.callback:
-            self.progress_tracker.callback(progress_info)
+        try:
+            # Cas 1: Fichier local - on copie
+            if local_exe:
+                if self.is_cancelled:
+                    return self._make_cancelled_result(package_name, start_time)
 
-        # Étape 1: Décompression de l'installeur
-        time.sleep(0.4)
-        if self.is_cancelled: return self._make_cancelled_result(package_name, start_time)
+                self._update_progress(10, f"📁 Recherche de l'installateur local pour {package_name}...", package_name)
 
-        progress_info = ProgressInfo(
-            current_progress=8,
-            global_progress=self._calculate_global_progress(8),
-            message=f"📦 Décompression de l'installeur de {package_name}...",
-            package_name=package_name,
-            current_step="Extraction des fichiers temporaires..."
-        )
-        if self.progress_tracker.callback:
-            self.progress_tracker.callback(progress_info)
+                local_installer_path = self._find_local_installer_path(local_exe)
+                if not local_installer_path or not local_installer_path.exists():
+                    return InstallationResult(
+                        status=InstallationStatus.FAILED,
+                        message=f"Installateur local non trouvé : {local_exe}",
+                        package_name=package_name,
+                        method=self.method
+                    )
 
-        # Étape 2: Vérifications
-        time.sleep(0.3)
-        if self.is_cancelled: return self._make_cancelled_result(package_name, start_time)
+                self._update_progress(30, f"📋 Copie de l'installateur local...", package_name)
 
-        progress_info = ProgressInfo(
-            current_progress=15,
-            global_progress=self._calculate_global_progress(15),
-            message=f"🔍 Vérification des prérequis pour {package_name}...",
-            package_name=package_name,
-            current_step="Analyse du système..."
-        )
-        if self.progress_tracker.callback:
-            self.progress_tracker.callback(progress_info)
+                # Déterminer le répertoire de destination
+                if custom_install_path:
+                    destination_dir = Path(custom_install_path)
+                else:
+                    destination_dir = Path.home() / "Desktop"
 
-        # Simulation de l'installation EXE avec étapes réalistes
-        stages = [
-            (25, "📁 Création du dossier d'installation..."),
-            (35, "📄 Copie des fichiers principaux...", "files"),
-            (50, "📚 Installation des bibliothèques...", "libs"),
-            (65, "🔧 Configuration de l'application...", "config"),
-            (75, "📝 Mise à jour du registre...", "registry"),
-            (85, "🎨 Installation des ressources...", "resources"),
-            (92, "🔗 Création des raccourcis bureau...", "shortcuts"),
-            (97, "🧹 Nettoyage des fichiers temporaires...", "cleanup")
-        ]
+                destination_dir.mkdir(parents=True, exist_ok=True)
+                destination_file = destination_dir / local_installer_path.name
 
-        for progress, step_msg, step_type in stages:
-            if self.is_cancelled: return self._make_cancelled_result(package_name, start_time)
+                # Copier le fichier
+                shutil.copy2(local_installer_path, destination_file)
 
-            # Temps variable selon l'étape (certaines plus longues)
-            if step_type == "files":
-                time.sleep(random.uniform(0.5, 1.0))  # Copie plus longue
-            elif step_type == "libs":
-                time.sleep(random.uniform(0.4, 0.8))  # Bibliothèques
+                self._update_progress(100, f"✅ {package_name} copié avec succès vers {destination_file}", package_name)
+
+                return InstallationResult(
+                    status=InstallationStatus.SUCCESS,
+                    message=f"{package_name} copié vers {destination_file}",
+                    package_name=package_name,
+                    method=self.method,
+                    execution_time=time.time() - start_time
+                )
+
+            # Cas 2: URL - on télécharge
             else:
-                time.sleep(random.uniform(0.2, 0.5))  # Autres étapes
+                if self.is_cancelled:
+                    return self._make_cancelled_result(package_name, start_time)
 
+                self._update_progress(5, f"📥 Téléchargement de {package_name}...", package_name)
+                exe_file_path = self._download_exe_to_destination(download_url, package_name, custom_install_path)
+
+                if not exe_file_path:
+                    return InstallationResult(
+                        status=InstallationStatus.FAILED,
+                        message=f"Échec du téléchargement de '{package_name}'",
+                        package_name=package_name,
+                        method=self.method
+                    )
+
+                if self.is_cancelled:
+                    return self._make_cancelled_result(package_name, start_time)
+
+                self._update_progress(100, f"✅ {package_name} téléchargé avec succès vers {exe_file_path}", package_name)
+
+                return InstallationResult(
+                    status=InstallationStatus.SUCCESS,
+                    message=f"{package_name} téléchargé vers {exe_file_path}",
+                    package_name=package_name,
+                    method=self.method,
+                    execution_time=time.time() - start_time
+                )
+
+        except Exception as e:
+            return InstallationResult(
+                status=InstallationStatus.FAILED,
+                message=f"Erreur lors du traitement de '{package_name}': {str(e)}",
+                package_name=package_name,
+                method=self.method,
+                execution_time=time.time() - start_time
+            )
+
+    def _find_local_installer_path(self, local_exe: str) -> Optional[Path]:
+        """
+        Trouve le chemin vers l'installateur local.
+        Gère les modes développement et build (PyInstaller).
+        """
+        is_frozen = getattr(sys, 'frozen', False)
+
+        if is_frozen:
+            # Mode PyInstaller - les fichiers sont dans le répertoire de l'exécutable
+            exe_dir = Path(sys.executable).parent
+            candidates = [
+                exe_dir / "_internal" / "installers" / local_exe,  # PyInstaller onedir
+                exe_dir / "installers" / local_exe,
+                exe_dir / local_exe
+            ]
+
+            # Essayer aussi _MEIPASS pour les fichiers intégrés
+            if hasattr(sys, '_MEIPASS'):
+                meipass = Path(sys._MEIPASS)
+                candidates.extend([
+                    meipass / "installers" / local_exe,
+                    meipass / local_exe
+                ])
+        else:
+            # Mode développement - partir du fichier actuel vers la racine du projet
+            current_file = Path(__file__).resolve()
+            project_root = current_file.parent.parent.parent.parent.parent
+            candidates = [
+                project_root / "installers" / local_exe
+            ]
+
+        # Tester chaque candidat
+        for candidate in candidates:
+            if candidate.exists():
+                return candidate
+
+        return None
+
+    def _download_exe_to_destination(self, url: str, package_name: str, custom_path: Optional[str] = None) -> Optional[Path]:
+        """Télécharge l'installateur EXE sur le Bureau ou dans le répertoire spécifié."""
+        try:
+            # Déterminer le répertoire de destination
+            if custom_path:
+                destination_dir = Path(custom_path)
+            else:
+                # Bureau par défaut
+                destination_dir = Path.home() / "Desktop"
+
+            # Créer le répertoire si nécessaire
+            destination_dir.mkdir(parents=True, exist_ok=True)
+
+            # Déterminer le nom du fichier
+            parsed_url = urlparse(url)
+            filename = Path(parsed_url.path).name
+            if not filename or not filename.endswith('.exe'):
+                filename = f"{package_name}_installer.exe"
+
+            exe_path = destination_dir / filename
+
+            # Télécharger le fichier
+            response = requests.get(url, stream=True, timeout=30)
+            response.raise_for_status()
+
+            total_size = int(response.headers.get('content-length', 0))
+            downloaded = 0
+
+            with open(exe_path, 'wb') as f:
+                for chunk in response.iter_content(chunk_size=8192):
+                    if self.is_cancelled:
+                        return None
+
+                    f.write(chunk)
+                    downloaded += len(chunk)
+
+                    # Mettre à jour la progression du téléchargement (5% à 100%)
+                    if total_size > 0:
+                        progress = 5 + int((downloaded / total_size) * 95)
+                        self._update_progress(progress, f"📥 Téléchargement de {package_name}... ({downloaded // 1024}KB/{total_size // 1024}KB)", package_name)
+
+            return exe_path
+
+        except Exception as e:
+            print(f"Erreur lors du téléchargement: {e}")
+            return None
+
+    def _update_progress(self, progress: int, message: str, package_name: str):
+        """Met à jour la progression."""
+        if self.progress_tracker.callback:
             progress_info = ProgressInfo(
                 current_progress=progress,
                 global_progress=self._calculate_global_progress(progress),
-                message=step_msg,
+                message=message,
                 package_name=package_name,
-                current_step=step_msg.replace("📁 ", "").replace("📄 ", "").replace("📚 ", "")
-                             .replace("🔧 ", "").replace("📝 ", "").replace("🎨 ", "")
-                             .replace("🔗 ", "").replace("🧹 ", "")
+                current_step=message
             )
-            if self.progress_tracker.callback:
-                self.progress_tracker.callback(progress_info)
-
-        # Fin de l'installation
-        time.sleep(0.3)
-        if self.is_cancelled: return self._make_cancelled_result(package_name, start_time)
-
-        progress_info = ProgressInfo(
-            current_progress=100,
-            global_progress=self._calculate_global_progress(100),
-            message=f"🎉 {package_name} installé avec succès via EXE !",
-            package_name=package_name,
-            current_step="Installation EXE terminée !"
-        )
-        if self.progress_tracker.callback:
             self.progress_tracker.callback(progress_info)
 
-        # Résultat final
-        return InstallationResult(
-            status=InstallationStatus.SUCCESS,
-            message=f"Parfait ! {package_name} installé via son installeur EXE !",
-            package_name=package_name,
-            method=self.method,
-            execution_time=time.time() - start_time
-        )
 
     def _make_cancelled_result(self, package_name: str, start_time: float) -> InstallationResult:
         """Helper pour quand on annule"""
