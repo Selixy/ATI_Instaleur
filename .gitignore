@@ -30,3 +30,8 @@ installers/*.msi
 installers/*.zip
 installers/*.dmg
 !app/installers/README.md
+# Dossiers locaux (outils, synchronisation)
+.claude/
+.stfolder/
+.stignore
+*.egg-info/

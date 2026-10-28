@@ -1,5 +1,0 @@
-# This directory is a Syncthing folder marker.
-# Do not delete.
-
-folderID: exmsl-6omcy
-created: 2025-10-02T11:06:36+02:00
